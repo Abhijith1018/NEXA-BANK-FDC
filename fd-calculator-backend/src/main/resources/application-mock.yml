@@ -1,0 +1,35 @@
+# This profile is for mocking dependencies and local development.
+# It overrides the default configuration to use an in-memory H2 database.
+
+server:
+  # Running on a different port to avoid conflicts with the actual app
+  port: 8088
+
+spring:
+  # --- DATASOURCE OVERRIDE: USES H2 IN-MEMORY DATABASE ---
+  datasource:
+    url: jdbc:h2:mem:mockdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # --- JPA & HIBERNATE OVERRIDE FOR H2 ---
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      # Creates the schema on startup and drops it on shutdown.
+      # This ensures a clean database for every mock run.
+      ddl-auto: create-drop
+    show-sql: true
+
+  # --- H2 CONSOLE (OPTIONAL BUT RECOMMENDED FOR DEBUGGING) ---
+  # Allows you to view the in-memory database at http://localhost:8088/h2-console
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+pricing:
+  api:
+    # URL points to a mock endpoint instead of the real one
+    url: http://localhost:8088/mock/pricing-api

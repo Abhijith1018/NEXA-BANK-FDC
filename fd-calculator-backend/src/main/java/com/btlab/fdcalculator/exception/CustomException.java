@@ -1,0 +1,1 @@
+package com.btlab.fdcalculator.exception; public class CustomException extends RuntimeException { public CustomException(String m){ super(m);} }

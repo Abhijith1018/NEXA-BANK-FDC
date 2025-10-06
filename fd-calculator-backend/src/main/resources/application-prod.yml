@@ -1,0 +1,6 @@
+spring:
+  profiles: prod
+
+external:
+  pricing:
+    base-url: http://product-pricing-service

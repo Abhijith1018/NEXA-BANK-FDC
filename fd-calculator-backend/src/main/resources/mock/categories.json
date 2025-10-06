@@ -1,0 +1,12 @@
+[
+  {
+    "category_id": 1,
+    "category_name": "Senior Citizen",
+    "additional_percentage": 0.5
+  },
+  {
+    "category_id": 2,
+    "category_name": "Staff",
+    "additional_percentage": 1.0
+  }
+]

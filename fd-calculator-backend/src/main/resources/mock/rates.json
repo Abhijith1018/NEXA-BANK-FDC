@@ -1,0 +1,10 @@
+[
+  {
+    "product_code": "FD_STD",
+    "base_rate": 6.5
+  },
+  {
+    "product_code": "FD_1YR",
+    "base_rate": 6.75
+  }
+]
