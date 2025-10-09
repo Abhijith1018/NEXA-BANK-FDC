@@ -1,50 +1,86 @@
 package com.btlab.fdcalculator.service.impl;
 
+import com.btlab.fdcalculator.client.PricingApiClient;
 import com.btlab.fdcalculator.model.dto.FDCalculationRequest;
 import com.btlab.fdcalculator.model.dto.FDCalculationResponse;
+import com.btlab.fdcalculator.model.dto.ProductRuleDTO;
 import com.btlab.fdcalculator.model.entity.*;
 import com.btlab.fdcalculator.repository.*;
 import com.btlab.fdcalculator.service.FDCalculatorService;
+import com.btlab.fdcalculator.service.ProductRuleValidationService;
 import com.btlab.fdcalculator.service.RateCacheService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FDCalculatorServiceImpl implements FDCalculatorService {
 
-    private final CategoryRepository categoryRepo;
     private final FDCalculationInputRepository inputRepo;
     private final FDCalculationResultRepository resultRepo;
     private final RateCacheService rateCacheService;
-
-    private static final BigDecimal MAX_EXTRA_PERCENT = new BigDecimal("2.00");
+    private final ProductRuleValidationService productRuleValidationService;
+    private final PricingApiClient pricingApiClient;
 
     @Override
     @Transactional
     public FDCalculationResponse calculate(FDCalculationRequest req) {
-        Category cat1 = categoryRepo.findById(req.category1_id())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid category1_id"));
-        Category cat2 = null;
-        if (req.category2_id() != null) {
-            cat2 = categoryRepo.findById(req.category2_id())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid category2_id"));
+        String productCode = req.product_code() == null ? "FD001" : req.product_code();
+        
+        // Validate the principal amount against product rules
+        productRuleValidationService.validateAmount(productCode, req.principal_amount());
+        
+        // Extract the product suffix (last 3 digits) for rule code construction
+        String productSuffix = extractProductSuffix(productCode);
+        
+        // Calculate tenure in months
+        int tenureInMonths = calculateTenureInMonths(req.tenure_value(), req.tenure_unit());
+        
+        // Get base rate from Product & Pricing API based on tenure
+        BigDecimal baseRate = getBaseRateFromApi(productCode, productSuffix, tenureInMonths, 
+            req.cumulative(), req.payout_freq(), req.compounding_frequency());
+        log.info("Base rate from API: {}%", baseRate);
+        
+        // Fetch category benefits from Product & Pricing API
+        BigDecimal extra = BigDecimal.ZERO;
+        String category1RuleCode = null;
+        String category2RuleCode = null;
+        
+        if (req.category1_id() != null && !req.category1_id().isBlank()) {
+            category1RuleCode = constructRuleCode(req.category1_id(), productSuffix);
+            BigDecimal cat1Benefit = getCategoryBenefit(productCode, category1RuleCode, req.category1_id());
+            extra = extra.add(cat1Benefit);
+            log.info("Category 1 ({}) benefit: {}%", req.category1_id(), cat1Benefit);
         }
-
-        String productCode = req.product_code() == null ? "FD_STD" : req.product_code();
-        BigDecimal baseRate = rateCacheService.getBaseRate(productCode);
-
-        BigDecimal extra = cat1.getAdditionalPercentage();
-        if (cat2 != null) extra = extra.add(cat2.getAdditionalPercentage());
-        if (extra.compareTo(MAX_EXTRA_PERCENT) > 0) extra = MAX_EXTRA_PERCENT;
-
+        
+        if (req.category2_id() != null && !req.category2_id().isBlank()) {
+            category2RuleCode = constructRuleCode(req.category2_id(), productSuffix);
+            BigDecimal cat2Benefit = getCategoryBenefit(productCode, category2RuleCode, req.category2_id());
+            extra = extra.add(cat2Benefit);
+            log.info("Category 2 ({}) benefit: {}%", req.category2_id(), cat2Benefit);
+        }
+        
+        // Get the maximum excess interest from product rules
+        BigDecimal maxExtraPercent = productRuleValidationService.getMaximumExcessInterest(productCode);
+        log.info("Total extra before cap: {}%, Max allowed: {}%", extra, maxExtraPercent);
+        
+        if (extra.compareTo(maxExtraPercent) > 0) {
+            log.warn("Extra interest {}% exceeds maximum {}%. Capping at maximum.", extra, maxExtraPercent);
+            extra = maxExtraPercent;
+        }
+        
         BigDecimal effectiveRate = baseRate.add(extra);
+        
+        log.info("Base rate: {}%, Extra: {}%, Effective rate: {}%", baseRate, extra, effectiveRate);
         BigDecimal maturityValue;
         LocalDate maturityDate = calcMaturityDate(req.tenure_value(), req.tenure_unit());
         BigDecimal apy;
@@ -67,8 +103,9 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             .tenureUnit(req.tenure_unit())
             .interestType(req.interest_type())
             .compoundingFrequency(req.compounding_frequency())
-            .category1(cat1)
-            .category2(cat2)
+            .category1Code(req.category1_id())
+            .category2Code(req.category2_id())
+            .productCode(productCode)
             .requestTimestamp(LocalDateTime.now())
             .build());
 
@@ -151,5 +188,143 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             case "YEARS" -> new BigDecimal(tenure);
             default -> throw new IllegalArgumentException("Invalid tenure_unit");
         };
+    }
+    
+    /**
+     * Extract product suffix (last 3 digits) from product code
+     * e.g., "FD001" -> "001"
+     */
+    private String extractProductSuffix(String productCode) {
+        if (productCode != null && productCode.length() >= 3) {
+            return productCode.substring(productCode.length() - 3);
+        }
+        return "001"; // Default suffix
+    }
+    
+    /**
+     * Construct rule code from category code and product suffix
+     * e.g., "SENIOR" + "001" -> "SR001", "GOLD" + "001" -> "GOLD001"
+     */
+    private String constructRuleCode(String categoryCode, String productSuffix) {
+        String upperCategoryCode = categoryCode.toUpperCase();
+        
+        // Map common category names to rule code prefixes
+        String prefix = switch (upperCategoryCode) {
+            case "SENIOR", "SENIOR_CITIZEN", "SR" -> "SR";
+            case "JUNIOR", "JR" -> "JR";
+            case "DIGI_YOUTH", "DY" -> "DY";
+            case "GOLD" -> "GOLD";
+            case "SILVER", "SIL" -> "SIL";
+            case "PLATINUM", "PLAT" -> "PLAT";
+            case "EMPLOYEE", "EMP" -> "EMP";
+            default -> upperCategoryCode; // Use as-is if not a known category
+        };
+        
+        return prefix + productSuffix;
+    }
+    
+    /**
+     * Fetch category benefit from Product & Pricing API
+     */
+    private BigDecimal getCategoryBenefit(String productCode, String ruleCode, String categoryName) {
+        try {
+            ProductRuleDTO rule = pricingApiClient.getRuleByCode(productCode, ruleCode);
+            
+            if (rule == null) {
+                log.warn("No rule found for category: {} (rule code: {}). Using 0% benefit.", 
+                    categoryName, ruleCode);
+                return BigDecimal.ZERO;
+            }
+            
+            log.info("Found rule: {} with value: {}", rule.ruleName(), rule.ruleValue());
+            return new BigDecimal(rule.ruleValue());
+            
+        } catch (Exception e) {
+            log.error("Error fetching category benefit for {} (rule code: {}): {}", 
+                categoryName, ruleCode, e.getMessage());
+            return BigDecimal.ZERO;
+        }
+    }
+    
+    /**
+     * Calculate tenure in months from tenure value and unit
+     */
+    private int calculateTenureInMonths(int tenureValue, String tenureUnit) {
+        return switch (tenureUnit.toUpperCase()) {
+            case "DAYS" -> (int) Math.ceil(tenureValue / 30.0); // Approximate days to months
+            case "MONTHS" -> tenureValue;
+            case "YEARS" -> tenureValue * 12;
+            default -> throw new IllegalArgumentException("Invalid tenure_unit: " + tenureUnit);
+        };
+    }
+    
+    /**
+     * Construct interest rate code based on tenure
+     * 0-12 months -> INT12M001
+     * 12-24 months -> INT24M001
+     * 24-36 months -> INT36M001
+     * 36-60 months -> INT60M001
+     * 60+ months -> INT60M001
+     */
+    private String constructRateCode(int tenureInMonths, String productSuffix) {
+        String tenurePart;
+        if (tenureInMonths <= 12) {
+            tenurePart = "12M";
+        } else if (tenureInMonths <= 24) {
+            tenurePart = "24M";
+        } else if (tenureInMonths <= 36) {
+            tenurePart = "36M";
+        } else {
+            tenurePart = "60M"; // 36+ months use 60M rates
+        }
+        
+        return "INT" + tenurePart + productSuffix;
+    }
+    
+    /**
+     * Get base rate from Product & Pricing API based on tenure and cumulative flag
+     */
+    private BigDecimal getBaseRateFromApi(String productCode, String productSuffix, 
+                                          int tenureInMonths, Boolean cumulative, 
+                                          String payoutFreq, String compoundingFreq) {
+        try {
+            // Construct rate code based on tenure
+            String rateCode = constructRateCode(tenureInMonths, productSuffix);
+            log.info("Fetching interest rate with code: {} for product: {}", rateCode, productCode);
+            
+            // Fetch interest rate from API
+            com.btlab.fdcalculator.model.dto.ProductInterestDTO interestRate = 
+                pricingApiClient.getInterestRateByCode(productCode, rateCode);
+            
+            if (interestRate == null) {
+                log.warn("No interest rate found for code: {}. Using fallback rate.", rateCode);
+                return rateCacheService.getBaseRate(productCode); // Fallback to cache
+            }
+            
+            // Select rate based on cumulative flag
+            BigDecimal rate;
+            if (cumulative != null && cumulative) {
+                rate = interestRate.rateCumulative();
+                log.info("Using cumulative rate: {}%", rate);
+            } else {
+                // For non-cumulative, use payout frequency or compounding frequency
+                String frequency = payoutFreq != null ? payoutFreq : compoundingFreq;
+                if (frequency == null) frequency = "YEARLY";
+                
+                rate = switch (frequency.toUpperCase()) {
+                    case "MONTHLY" -> interestRate.rateNonCumulativeMonthly();
+                    case "QUARTERLY" -> interestRate.rateNonCumulativeQuarterly();
+                    case "YEARLY" -> interestRate.rateNonCumulativeYearly();
+                    default -> interestRate.rateNonCumulativeYearly();
+                };
+                log.info("Using non-cumulative {} rate: {}%", frequency, rate);
+            }
+            
+            return rate != null ? rate : rateCacheService.getBaseRate(productCode);
+            
+        } catch (Exception e) {
+            log.error("Error fetching interest rate from API: {}. Using fallback.", e.getMessage());
+            return rateCacheService.getBaseRate(productCode); // Fallback to cache
+        }
     }
 }

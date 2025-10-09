@@ -31,13 +31,14 @@ public class FDCalculationInput {
     @Column(length = 20)
     private String compoundingFrequency;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "category1_id")
-    private Category category1;
+    @Column(length = 50)
+    private String category1Code;  // Changed to store category code instead of foreign key
 
-    @ManyToOne
-    @JoinColumn(name = "category2_id")
-    private Category category2;
+    @Column(length = 50)
+    private String category2Code;  // Changed to store category code instead of foreign key
+    
+    @Column(length = 20)
+    private String productCode;  // Store the product code used
 
     private LocalDateTime requestTimestamp;
 }

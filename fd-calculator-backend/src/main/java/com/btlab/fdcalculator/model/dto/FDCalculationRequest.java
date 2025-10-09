@@ -19,7 +19,9 @@ public record FDCalculationRequest(
     @Pattern(regexp = "DAYS|MONTHS|YEARS") String tenure_unit,
     @Pattern(regexp = "SIMPLE|COMPOUND") String interest_type,
     String compounding_frequency,
-    @NotNull Long category1_id,
-    Long category2_id,
+    String category1_id,  // Category codes like "SENIOR", "GOLD"
+    String category2_id,  // Category codes like "GOLD", "SILVER"
+    Boolean cumulative,   // true for cumulative, false for non-cumulative
+    @Pattern(regexp = "MONTHLY|QUARTERLY|YEARLY") String payout_freq,  // Only for non-cumulative
     String product_code
 ) {}

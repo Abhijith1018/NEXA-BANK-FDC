@@ -24,16 +24,26 @@ public class ApiCategoryService implements CategoryService {
         // default one, as categories are likely to be similar across products.
         String defaultProductCode = "FD001";
 
-        // 1. Call the new Feign client method to get a list of rules
-        List<ProductRuleDTO> rules = pricingApiClient.getRules(defaultProductCode);
+        // 1. Call the new Feign client method to get a paginated list of rules
+        var pagedResponse = pricingApiClient.getRules(defaultProductCode, 0, 100);
+        List<ProductRuleDTO> rules = pagedResponse.content();
 
-        // 2. Transform (map) the list of rules into the CategoryDTO format
+        // 2. Filter only benefit categories (JR, SR, DY)
+        // 3. Transform (map) the list of rules into the CategoryDTO format
         return rules.stream()
+                .filter(rule -> isBenefitCategory(rule.ruleCode()))
                 .map(rule -> new CategoryDTO(
                         Long.parseLong(rule.ruleId()), // Convert the String ID to a Long
                         rule.ruleName(),
                         new BigDecimal(rule.ruleValue()) // Convert the String rate value to BigDecimal
                 ))
                 .toList();
+    }
+    
+    private boolean isBenefitCategory(String ruleCode) {
+        // Only return benefit categories, not constraint rules
+        return ruleCode.startsWith("JR") || 
+               ruleCode.startsWith("SR") || 
+               ruleCode.startsWith("DY");
     }
 }

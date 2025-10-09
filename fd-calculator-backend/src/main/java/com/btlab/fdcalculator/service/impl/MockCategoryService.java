@@ -20,16 +20,26 @@ public class MockCategoryService implements CategoryService {
 
     @Override
     public List<CategoryDTO> getCategories() {
-        // 1. Call the new getRules() method from the client
-        List<ProductRuleDTO> rules = client.getRules("mock-product");
+        // 1. Call the new getRules() method from the client with pagination
+        var pagedResponse = client.getRules("mock-product", 0, 100);
+        List<ProductRuleDTO> rules = pagedResponse.content();
 
-        // 2. Transform the list of rules into the CategoryDTO format
+        // 2. Filter only benefit categories (JR, SR, DY)
+        // 3. Transform the list of rules into the CategoryDTO format
         return rules.stream()
+                .filter(rule -> isBenefitCategory(rule.ruleCode()))
                 .map(rule -> new CategoryDTO(
                         Long.parseLong(rule.ruleId()),
                         rule.ruleName(),
                         new BigDecimal(rule.ruleValue())
                 ))
                 .toList();
+    }
+    
+    private boolean isBenefitCategory(String ruleCode) {
+        // Only return benefit categories, not constraint rules
+        return ruleCode.startsWith("JR") || 
+               ruleCode.startsWith("SR") || 
+               ruleCode.startsWith("DY");
     }
 }

@@ -1,0 +1,2039 @@
+openapi: 3.1.0
+info:
+  title: Product and Pricing API
+  description: Banking Product and Pricing Management APIs
+  contact:
+    name: Banking Labs
+    email: support@bankinglabs.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+tags:
+  - name: Product Charges
+    description: Product charges management endpoints
+  - name: Product Roles
+    description: Product roles management endpoints
+  - name: Product Rules
+    description: Product rules management endpoints
+  - name: Product Balances
+    description: Product balances management endpoints
+  - name: Products
+    description: Product management endpoints
+  - name: Product Transactions
+    description: Product transactions management endpoints
+  - name: Product Communications
+    description: Product communications management endpoints
+  - name: Product Interest Rates
+    description: Product interest rates management endpoints
+paths:
+  /api/products/{productCode}:
+    get:
+      tags:
+        - Products
+      summary: Get product by code
+      operationId: getProductByCode
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductDetailsDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductDetailsDTO'
+    put:
+      tags:
+        - Products
+      summary: Update a product
+      operationId: updateProduct
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrUpdateProductRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductDetailsDTO'
+    delete:
+      tags:
+        - Products
+      summary: Delete a product
+      operationId: deleteProduct
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /api/products/{productCode}/transactions/{transactionCode}:
+    get:
+      tags:
+        - Product Transactions
+      summary: Get a specific transaction
+      operationId: getTransactionByCode
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: transactionCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductTransactionDTO'
+        '404':
+          description: Transaction or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductTransactionDTO'
+    put:
+      tags:
+        - Product Transactions
+      summary: Update a transaction
+      operationId: updateTransaction
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: transactionCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductTransactionRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Transaction updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductTransactionDTO'
+        '400':
+          description: Invalid transaction data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductTransactionDTO'
+        '404':
+          description: Transaction or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductTransactionDTO'
+    delete:
+      tags:
+        - Product Transactions
+      summary: Delete a transaction
+      operationId: deleteTransaction
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: transactionCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Transaction deleted successfully
+        '404':
+          description: Transaction or product not found
+  /api/products/{productCode}/rules/{ruleCode}:
+    get:
+      tags:
+        - Product Rules
+      summary: Get a specific rule
+      operationId: getRuleByCode
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: ruleCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rule found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRuleDTO'
+        '404':
+          description: Rule or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRuleDTO'
+    put:
+      tags:
+        - Product Rules
+      summary: Update a rule
+      operationId: updateRule
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: ruleCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRuleRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Rule updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRuleDTO'
+        '400':
+          description: Invalid rule data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRuleDTO'
+        '404':
+          description: Rule or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRuleDTO'
+    delete:
+      tags:
+        - Product Rules
+      summary: Delete a rule
+      operationId: deleteRule
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: ruleCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Rule deleted successfully
+        '404':
+          description: Rule or product not found
+  /api/products/{productCode}/roles/{roleCode}:
+    get:
+      tags:
+        - Product Roles
+      summary: Get a specific role
+      operationId: getRoleByCode
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: roleCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Role found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRoleDTO'
+        '404':
+          description: Role or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRoleDTO'
+    put:
+      tags:
+        - Product Roles
+      summary: Update a role
+      operationId: updateRole
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: roleCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRoleRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRoleDTO'
+        '400':
+          description: Invalid role data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRoleDTO'
+        '404':
+          description: Role or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRoleDTO'
+    delete:
+      tags:
+        - Product Roles
+      summary: Delete a role
+      operationId: deleteRole
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: roleCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Role deleted successfully
+        '404':
+          description: Role or product not found
+  /api/products/{productCode}/interest-rates/{rateCode}:
+    get:
+      tags:
+        - Product Interest Rates
+      summary: Get a specific interest rate
+      operationId: getInterestRateByCode
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: rateCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Interest rate found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductInterestDTO'
+        '404':
+          description: Interest rate or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductInterestDTO'
+    put:
+      tags:
+        - Product Interest Rates
+      summary: Update an interest rate
+      operationId: updateInterestRate
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: rateCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInterestRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Interest rate updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductInterestDTO'
+        '400':
+          description: Invalid interest rate data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductInterestDTO'
+        '404':
+          description: Interest rate or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductInterestDTO'
+    delete:
+      tags:
+        - Product Interest Rates
+      summary: Delete an interest rate
+      operationId: deleteInterestRate
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: rateCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Interest rate deleted successfully
+        '404':
+          description: Interest rate or product not found
+  /api/products/{productCode}/communications/{commCode}:
+    get:
+      tags:
+        - Product Communications
+      summary: Get a specific communication
+      operationId: getCommunicationByCode
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: commCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Communication found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductCommunicationDTO'
+        '404':
+          description: Communication or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductCommunicationDTO'
+    put:
+      tags:
+        - Product Communications
+      summary: Update a communication
+      operationId: updateCommunication
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: commCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCommunicationRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Communication updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductCommunicationDTO'
+        '400':
+          description: Invalid communication data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductCommunicationDTO'
+        '404':
+          description: Communication or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductCommunicationDTO'
+    delete:
+      tags:
+        - Product Communications
+      summary: Delete a communication
+      operationId: deleteCommunication
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: commCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Communication deleted successfully
+        '404':
+          description: Communication or product not found
+  /api/products/{productCode}/charges/{chargeCode}:
+    get:
+      tags:
+        - Product Charges
+      summary: Get a specific charge
+      operationId: getChargeByCode
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chargeCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Charge found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductChargeDTO'
+        '404':
+          description: Charge or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductChargeDTO'
+    put:
+      tags:
+        - Product Charges
+      summary: Update a charge
+      operationId: updateCharge
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chargeCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductChargeRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Charge updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductChargeDTO'
+        '400':
+          description: Invalid charge data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductChargeDTO'
+        '404':
+          description: Charge or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductChargeDTO'
+    delete:
+      tags:
+        - Product Charges
+      summary: Delete a charge
+      operationId: deleteCharge
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chargeCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Charge deleted successfully
+        '404':
+          description: Charge or product not found
+  /api/products/{productCode}/balances/{balanceCode}:
+    get:
+      tags:
+        - Product Balances
+      summary: Get a specific balance
+      operationId: getBalanceByCode
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: balanceCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Balance found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductBalanceDTO'
+        '404':
+          description: Balance or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductBalanceDTO'
+    put:
+      tags:
+        - Product Balances
+      summary: Update a balance
+      operationId: updateBalance
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: balanceCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductBalanceRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Balance updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductBalanceDTO'
+        '400':
+          description: Invalid balance data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductBalanceDTO'
+        '404':
+          description: Balance or product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductBalanceDTO'
+    delete:
+      tags:
+        - Product Balances
+      summary: Delete a balance
+      operationId: deleteBalance
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: balanceCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Balance deleted successfully
+        '404':
+          description: Balance or product not found
+  /api/products:
+    get:
+      tags:
+        - Products
+      summary: Get all products
+      operationId: getAllProducts
+      parameters:
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductDetailsDTO'
+    post:
+      tags:
+        - Products
+      summary: Create a new product
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrUpdateProductRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductDetailsDTO'
+  /api/products/{productCode}/transactions:
+    get:
+      tags:
+        - Product Transactions
+      summary: Get all transactions for a product
+      operationId: getTransactions
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: Transactions retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductTransactionDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductTransactionDTO'
+    post:
+      tags:
+        - Product Transactions
+      summary: Add a new transaction to a product
+      operationId: addTransaction
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductTransactionRequestDTO'
+        required: true
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductTransactionDTO'
+        '400':
+          description: Invalid transaction data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductTransactionDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductTransactionDTO'
+  /api/products/{productCode}/rules:
+    get:
+      tags:
+        - Product Rules
+      summary: Get all rules for a product
+      operationId: getRules
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: Rules retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductRuleDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductRuleDTO'
+    post:
+      tags:
+        - Product Rules
+      summary: Add a new rule to a product
+      operationId: addRule
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRuleRequestDTO'
+        required: true
+      responses:
+        '201':
+          description: Rule created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRuleDTO'
+        '400':
+          description: Invalid rule data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRuleDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRuleDTO'
+  /api/products/{productCode}/roles:
+    get:
+      tags:
+        - Product Roles
+      summary: Get all roles for a product
+      operationId: getRoles
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: Roles retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductRoleDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductRoleDTO'
+    post:
+      tags:
+        - Product Roles
+      summary: Add a new role to a product
+      operationId: addRole
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRoleRequestDTO'
+        required: true
+      responses:
+        '201':
+          description: Role created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRoleDTO'
+        '400':
+          description: Invalid role data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRoleDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductRoleDTO'
+  /api/products/{productCode}/interest-rates:
+    get:
+      tags:
+        - Product Interest Rates
+      summary: Get all interest rates for a product
+      operationId: getInterestRates
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: Interest rates retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductInterestDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductInterestDTO'
+    post:
+      tags:
+        - Product Interest Rates
+      summary: Add a new interest rate to a product
+      operationId: addInterestRate
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInterestRequestDTO'
+        required: true
+      responses:
+        '201':
+          description: Interest rate created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductInterestDTO'
+        '400':
+          description: Invalid interest rate data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductInterestDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductInterestDTO'
+  /api/products/{productCode}/communications:
+    get:
+      tags:
+        - Product Communications
+      summary: Get all communications for a product
+      operationId: getCommunications
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: Communications retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductCommunicationDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductCommunicationDTO'
+    post:
+      tags:
+        - Product Communications
+      summary: Add a new communication to a product
+      operationId: addCommunication
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCommunicationRequestDTO'
+        required: true
+      responses:
+        '201':
+          description: Communication created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductCommunicationDTO'
+        '400':
+          description: Invalid communication data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductCommunicationDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductCommunicationDTO'
+  /api/products/{productCode}/charges:
+    get:
+      tags:
+        - Product Charges
+      summary: Get all charges for a product
+      operationId: getCharges
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: Charges retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductChargeDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductChargeDTO'
+    post:
+      tags:
+        - Product Charges
+      summary: Add a new charge to a product
+      operationId: addCharge
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductChargeRequestDTO'
+        required: true
+      responses:
+        '201':
+          description: Charge created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductChargeDTO'
+        '400':
+          description: Invalid charge data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductChargeDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductChargeDTO'
+  /api/products/{productCode}/balances:
+    get:
+      tags:
+        - Product Balances
+      summary: Get all balances for a product
+      operationId: getBalances
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: Balances retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductBalanceDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageProductBalanceDTO'
+    post:
+      tags:
+        - Product Balances
+      summary: Add a new balance to a product
+      operationId: addBalance
+      parameters:
+        - name: productCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductBalanceRequestDTO'
+        required: true
+      responses:
+        '201':
+          description: Balance created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductBalanceDTO'
+        '400':
+          description: Invalid balance data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductBalanceDTO'
+        '404':
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductBalanceDTO'
+  /api/products/search:
+    get:
+      tags:
+        - Products
+      summary: Search products with filters
+      operationId: searchProducts
+      parameters:
+        - name: productType
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Products found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDetailsDTO'
+components:
+  schemas:
+    CreateOrUpdateProductRequestDTO:
+      type: object
+      properties:
+        productCode:
+          type: string
+          minLength: 1
+        productName:
+          type: string
+          minLength: 1
+        productType:
+          type: string
+        description:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+        efctv_date:
+          type: string
+          format: date-time
+        expr_date:
+          type: string
+          format: date-time
+      required:
+        - currency
+        - efctv_date
+        - productCode
+        - productName
+        - productType
+    ProductBalanceDTO:
+      type: object
+      properties:
+        balanceId:
+          type: string
+          format: uuid
+        balanceType:
+          type: string
+          enum:
+            - PRINCIPAL
+            - INTEREST
+            - PENALTY
+            - FEES
+        amount:
+          type: number
+    ProductChargeDTO:
+      type: object
+      properties:
+        chargeId:
+          type: string
+          format: uuid
+        chargeCode:
+          type: string
+        chargeType:
+          type: string
+          enum:
+            - INTEREST
+            - FEE
+            - TAX
+        calculationType:
+          type: string
+          enum:
+            - FLAT
+            - PERCENTAGE
+        frequency:
+          type: string
+          enum:
+            - ONE_TIME
+            - MONTHLY
+            - QUARTERLY
+            - ANNUALLY
+        amount:
+          type: number
+    ProductCommunicationDTO:
+      type: object
+      properties:
+        commId:
+          type: string
+          format: uuid
+        commCode:
+          type: string
+        communicationType:
+          type: string
+          enum:
+            - ALERT
+            - NOTICE
+            - STATEMENT
+        channel:
+          type: string
+          enum:
+            - EMAIL
+            - SMS
+            - POST
+        event:
+          type: string
+        template:
+          type: string
+    ProductDetailsDTO:
+      type: object
+      properties:
+        productId:
+          type: string
+          format: uuid
+        productCode:
+          type: string
+        productName:
+          type: string
+        productType:
+          type: string
+          enum:
+            - FIXED_DEPOSIT
+            - SAVINGS
+            - CURRENT
+            - LOAN
+        currency:
+          type: string
+          enum:
+            - INR
+            - JPY
+            - AED
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - DRAFT
+        productRules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRuleDTO'
+        productCharges:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductChargeDTO'
+        productRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRoleDTO'
+        productTransactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductTransactionDTO'
+        productBalances:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductBalanceDTO'
+        productCommunications:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCommunicationDTO'
+        createdAt:
+          type: string
+          format: date-time
+        efctv_date:
+          type: string
+          format: date-time
+    ProductRoleDTO:
+      type: object
+      properties:
+        roleId:
+          type: string
+          format: uuid
+        roleCode:
+          type: string
+        roleType:
+          type: string
+          enum:
+            - OWNER
+            - CO_OWNER
+            - GUARDIAN
+            - NOMINEE
+            - BORROWER
+            - GUARANTOR
+        roleName:
+          type: string
+    ProductRuleDTO:
+      type: object
+      properties:
+        ruleId:
+          type: string
+          format: uuid
+        ruleCode:
+          type: string
+        ruleName:
+          type: string
+        ruleType:
+          type: string
+          enum:
+            - SIMPLE
+            - COMPLEX
+        dataType:
+          type: string
+          enum:
+            - NUMBER
+            - TEXT
+            - DATE
+            - PERCENTAGE
+            - CURRENCY
+            - DURATION
+            - FREQUENCY
+            - AMOUNT_WITH_CURRENCY
+            - JSON
+            - JSON_MATRIX
+        ruleValue:
+          type: string
+        validationType:
+          type: string
+          enum:
+            - MIN_MAX
+            - EXACT
+            - LIST
+    ProductTransactionDTO:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        transactionCode:
+          type: string
+        transactionType:
+          type: string
+          enum:
+            - DEPOSIT
+            - WITHDRAWAL
+            - INTEREST_ACCRUED
+            - DISBURSEMENT
+            - PAYMENT
+        amountLimit:
+          type: number
+    ProductTransactionRequestDTO:
+      type: object
+      properties:
+        transactionCode:
+          type: string
+          minLength: 1
+        transactionName:
+          type: string
+          minLength: 1
+        transactionType:
+          type: string
+        debitCreditIndicator:
+          type: string
+        minimumAmount:
+          type: number
+          format: double
+        maximumAmount:
+          type: number
+          format: double
+        description:
+          type: string
+        active:
+          type: boolean
+      required:
+        - debitCreditIndicator
+        - transactionCode
+        - transactionName
+        - transactionType
+    ProductRuleRequestDTO:
+      type: object
+      properties:
+        ruleCode:
+          type: string
+          minLength: 1
+        ruleName:
+          type: string
+          minLength: 1
+        ruleType:
+          type: string
+          enum:
+            - SIMPLE
+            - COMPLEX
+        dataType:
+          type: string
+          enum:
+            - NUMBER
+            - TEXT
+            - DATE
+            - PERCENTAGE
+            - CURRENCY
+            - DURATION
+            - FREQUENCY
+            - AMOUNT_WITH_CURRENCY
+            - JSON
+            - JSON_MATRIX
+        ruleValue:
+          type: string
+          minLength: 1
+        validationType:
+          type: string
+          enum:
+            - MIN_MAX
+            - EXACT
+            - LIST
+      required:
+        - dataType
+        - ruleCode
+        - ruleName
+        - ruleType
+        - ruleValue
+        - validationType
+    ProductRoleRequestDTO:
+      type: object
+      properties:
+        roleCode:
+          type: string
+          minLength: 1
+        roleName:
+          type: string
+          minLength: 1
+        roleType:
+          type: string
+        description:
+          type: string
+        active:
+          type: boolean
+      required:
+        - roleCode
+        - roleName
+        - roleType
+    ProductInterestRequestDTO:
+      type: object
+      properties:
+        rateCode:
+          type: string
+        termInMonths:
+          type: integer
+          format: int32
+        rateCumulative:
+          type: number
+          minimum: 0
+        rateNonCumulativeMonthly:
+          type: number
+          minimum: 0
+        rateNonCumulativeQuarterly:
+          type: number
+          minimum: 0
+        rateNonCumulativeYearly:
+          type: number
+          minimum: 0
+      required:
+        - rateCode
+        - rateCumulative
+        - rateNonCumulativeMonthly
+        - rateNonCumulativeQuarterly
+        - rateNonCumulativeYearly
+        - termInMonths
+    ProductInterestDTO:
+      type: object
+      properties:
+        rateId:
+          type: string
+          format: uuid
+        rateCode:
+          type: string
+        termInMonths:
+          type: integer
+          format: int32
+        rateCumulative:
+          type: number
+        rateNonCumulativeMonthly:
+          type: number
+        rateNonCumulativeQuarterly:
+          type: number
+        rateNonCumulativeYearly:
+          type: number
+    ProductCommunicationRequestDTO:
+      type: object
+      properties:
+        communicationCode:
+          type: string
+          minLength: 1
+        communicationName:
+          type: string
+          minLength: 1
+        communicationType:
+          type: string
+        templateContent:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        active:
+          type: boolean
+      required:
+        - communicationCode
+        - communicationName
+        - communicationType
+        - templateContent
+    ProductChargeRequestDTO:
+      type: object
+      properties:
+        chargeCode:
+          type: string
+          minLength: 1
+        chargeName:
+          type: string
+          minLength: 1
+        chargeType:
+          type: string
+          enum:
+            - INTEREST
+            - FEE
+            - TAX
+        calculationType:
+          type: string
+          enum:
+            - FLAT
+            - PERCENTAGE
+        frequency:
+          type: string
+          enum:
+            - ONE_TIME
+            - MONTHLY
+            - QUARTERLY
+            - ANNUALLY
+        chargeValue:
+          type: number
+        debitCredit:
+          type: string
+          enum:
+            - DEBIT
+            - CREDIT
+      required:
+        - calculationType
+        - chargeCode
+        - chargeName
+        - chargeType
+        - frequency
+    ProductBalanceRequestDTO:
+      type: object
+      properties:
+        balanceCode:
+          type: string
+          minLength: 1
+        balanceName:
+          type: string
+          minLength: 1
+        balanceType:
+          type: string
+          enum:
+            - PRINCIPAL
+            - INTEREST
+            - PENALTY
+            - FEES
+        description:
+          type: string
+        active:
+          type: boolean
+      required:
+        - balanceCode
+        - balanceName
+        - balanceType
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+        sort:
+          type: array
+          items:
+            type: string
+    PageProductDetailsDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDetailsDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        unpaged:
+          type: boolean
+        paged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/SortObject'
+    SortObject:
+      type: object
+      properties:
+        unsorted:
+          type: boolean
+        sorted:
+          type: boolean
+        empty:
+          type: boolean
+    PageProductTransactionDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductTransactionDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
+    PageProductRuleDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRuleDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
+    PageProductRoleDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRoleDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
+    PageProductInterestDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductInterestDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
+    PageProductCommunicationDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCommunicationDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
+    PageProductChargeDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductChargeDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
+    PageProductBalanceDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductBalanceDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
