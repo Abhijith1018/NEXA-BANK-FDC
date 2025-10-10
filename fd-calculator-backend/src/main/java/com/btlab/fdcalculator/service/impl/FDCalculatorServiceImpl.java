@@ -103,10 +103,17 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             
             // For non-cumulative, maturity value is principal only
             maturityValue = req.principal_amount();
-            apy = effectiveRate; // APY same as effective rate for non-cumulative
             
-            log.info("Non-cumulative FD: Payout freq={}, Compounding freq={}, Payout amount={}, Maturity=Principal only", 
-                payoutFreq, req.compounding_frequency(), payoutAmount);
+            // Calculate APY based on compounding frequency
+            // Even though interest is paid out, it still compounds during the payout period
+            if (req.compounding_frequency() != null && !"SIMPLE".equalsIgnoreCase(req.interest_type())) {
+                apy = calcAPY(effectiveRate, req.compounding_frequency());
+            } else {
+                apy = effectiveRate; // Simple interest or no compounding
+            }
+            
+            log.info("Non-cumulative FD: Payout freq={}, Compounding freq={}, Payout amount={}, APY={}, Maturity=Principal only", 
+                payoutFreq, req.compounding_frequency(), payoutAmount, apy);
         } else {
             // Cumulative: Interest compounded and paid at maturity
             if ("SIMPLE".equalsIgnoreCase(req.interest_type())) {
