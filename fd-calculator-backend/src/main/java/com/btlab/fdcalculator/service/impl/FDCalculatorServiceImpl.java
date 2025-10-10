@@ -81,19 +81,46 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
         BigDecimal effectiveRate = baseRate.add(extra);
         
         log.info("Base rate: {}%, Extra: {}%, Effective rate: {}%", baseRate, extra, effectiveRate);
+        
         BigDecimal maturityValue;
         LocalDate maturityDate = calcMaturityDate(req.tenure_value(), req.tenure_unit());
         BigDecimal apy;
-
-        if ("SIMPLE".equalsIgnoreCase(req.interest_type())) {
-            maturityValue = simpleMaturity(
-                req.principal_amount(), effectiveRate, req.tenure_value(), req.tenure_unit());
-            apy = effectiveRate;
+        String payoutFreq = null;
+        BigDecimal payoutAmount = null;
+        
+        // Check if this is a non-cumulative FD
+        boolean isNonCumulative = req.cumulative() != null && !req.cumulative();
+        
+        if (isNonCumulative) {
+            // Non-cumulative: Interest paid out periodically, maturity = principal only
+            payoutFreq = req.payout_freq() != null ? req.payout_freq() : req.compounding_frequency();
+            if (payoutFreq == null) payoutFreq = "YEARLY";
+            
+            // Calculate periodic payout amount
+            payoutAmount = calculatePeriodicPayout(
+                req.principal_amount(), effectiveRate, req.tenure_value(), 
+                req.tenure_unit(), payoutFreq);
+            
+            // For non-cumulative, maturity value is principal only
+            maturityValue = req.principal_amount();
+            apy = effectiveRate; // APY same as effective rate for non-cumulative
+            
+            log.info("Non-cumulative FD: Payout freq={}, Payout amount={}, Maturity=Principal only", 
+                payoutFreq, payoutAmount);
         } else {
-            maturityValue = compoundMaturity(
-                req.principal_amount(), effectiveRate, req.tenure_value(), req.tenure_unit(),
-                req.compounding_frequency());
-            apy = calcAPY(effectiveRate, req.compounding_frequency());
+            // Cumulative: Interest compounded and paid at maturity
+            if ("SIMPLE".equalsIgnoreCase(req.interest_type())) {
+                maturityValue = simpleMaturity(
+                    req.principal_amount(), effectiveRate, req.tenure_value(), req.tenure_unit());
+                apy = effectiveRate;
+            } else {
+                maturityValue = compoundMaturity(
+                    req.principal_amount(), effectiveRate, req.tenure_value(), req.tenure_unit(),
+                    req.compounding_frequency());
+                apy = calcAPY(effectiveRate, req.compounding_frequency());
+            }
+            
+            log.info("Cumulative FD: Maturity value={}", maturityValue);
         }
 
         FDCalculationInput in = inputRepo.save(FDCalculationInput.builder()
@@ -115,6 +142,8 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             .maturityDate(maturityDate)
             .apy(apy)
             .effectiveRate(effectiveRate)
+            .payoutFreq(payoutFreq)
+            .payoutAmount(payoutAmount)
             .build());
 
         return new FDCalculationResponse(
@@ -122,6 +151,8 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             res.getMaturityDate().toString(),
             res.getApy(),
             res.getEffectiveRate(),
+            res.getPayoutFreq(),
+            res.getPayoutAmount(),
             in.getCalcId(),
             res.getResultId()
         );
@@ -136,6 +167,8 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             res.getMaturityDate().toString(),
             res.getApy(),
             res.getEffectiveRate(),
+            res.getPayoutFreq(),
+            res.getPayoutAmount(),
             res.getCalc().getCalcId(),
             res.getResultId()
         );
@@ -188,6 +221,46 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             case "YEARS" -> new BigDecimal(tenure);
             default -> throw new IllegalArgumentException("Invalid tenure_unit");
         };
+    }
+    
+    /**
+     * Calculate periodic payout amount for non-cumulative FDs
+     * Interest is paid out every period, so we calculate: (Principal * Rate * Period) / Periods per year
+     */
+    private BigDecimal calculatePeriodicPayout(BigDecimal principal, BigDecimal ratePct, 
+                                               int tenure, String tenureUnit, String payoutFreq) {
+        // Convert rate from percentage to decimal
+        BigDecimal rate = ratePct.movePointLeft(2);
+        
+        // Calculate total tenure in years
+        BigDecimal tenureInYears = toYears(tenure, tenureUnit);
+        
+        // Calculate total number of payout periods
+        int periodsPerYear = switch (payoutFreq.toUpperCase()) {
+            case "MONTHLY" -> 12;
+            case "QUARTERLY" -> 4;
+            case "YEARLY" -> 1;
+            default -> throw new IllegalArgumentException("Invalid payout_freq: " + payoutFreq);
+        };
+        
+        // Total number of payout periods = tenure in years * periods per year
+        BigDecimal totalPeriods = tenureInYears.multiply(new BigDecimal(periodsPerYear));
+        
+        // Annual interest = Principal * Rate
+        BigDecimal annualInterest = principal.multiply(rate);
+        
+        // Interest per period = Annual Interest / Periods per year
+        BigDecimal interestPerPeriod = annualInterest.divide(
+            new BigDecimal(periodsPerYear), 
+            MathContext.DECIMAL64
+        );
+        
+        log.info("Non-cumulative payout calculation: Principal={}, Rate={}%, Tenure={} {}, " +
+                 "Payout freq={}, Periods per year={}, Total periods={}, Payout amount per period={}", 
+                 principal, ratePct, tenure, tenureUnit, payoutFreq, periodsPerYear, 
+                 totalPeriods, interestPerPeriod);
+        
+        return interestPerPeriod.setScale(4, RoundingMode.HALF_UP);
     }
     
     /**

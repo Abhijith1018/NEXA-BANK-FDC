@@ -28,4 +28,10 @@ public class FDCalculationResult {
 
     @Column(precision = 7, scale = 4)
     private BigDecimal effectiveRate;
+
+    @Column(length = 20)
+    private String payoutFreq;  // MONTHLY, QUARTERLY, YEARLY (null if cumulative)
+
+    @Column(precision = 20, scale = 4)
+    private BigDecimal payoutAmount;  // Interest paid per period (null if cumulative)
 }
