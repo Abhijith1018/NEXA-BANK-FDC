@@ -96,17 +96,17 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             payoutFreq = req.payout_freq() != null ? req.payout_freq() : req.compounding_frequency();
             if (payoutFreq == null) payoutFreq = "YEARLY";
             
-            // Calculate periodic payout amount
-            payoutAmount = calculatePeriodicPayout(
-                req.principal_amount(), effectiveRate, req.tenure_value(), 
-                req.tenure_unit(), payoutFreq);
+            // Calculate periodic payout amount with compounding
+            payoutAmount = calculatePeriodicPayoutWithCompounding(
+                req.principal_amount(), effectiveRate, payoutFreq, 
+                req.compounding_frequency());
             
             // For non-cumulative, maturity value is principal only
             maturityValue = req.principal_amount();
             apy = effectiveRate; // APY same as effective rate for non-cumulative
             
-            log.info("Non-cumulative FD: Payout freq={}, Payout amount={}, Maturity=Principal only", 
-                payoutFreq, payoutAmount);
+            log.info("Non-cumulative FD: Payout freq={}, Compounding freq={}, Payout amount={}, Maturity=Principal only", 
+                payoutFreq, req.compounding_frequency(), payoutAmount);
         } else {
             // Cumulative: Interest compounded and paid at maturity
             if ("SIMPLE".equalsIgnoreCase(req.interest_type())) {
@@ -224,43 +224,82 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
     }
     
     /**
-     * Calculate periodic payout amount for non-cumulative FDs
-     * Interest is paid out every period, so we calculate: (Principal * Rate * Period) / Periods per year
+     * Calculate periodic payout amount for non-cumulative FDs with compounding
+     * 
+     * For non-cumulative FDs:
+     * - Interest is compounded based on compounding_frequency
+     * - Accumulated interest is paid out based on payout_freq
+     * 
+     * Example: compounding_frequency = QUARTERLY, payout_freq = YEARLY
+     * - Interest compounds 4 times per year
+     * - Accumulated interest for the year is paid out yearly
+     * 
+     * Formula: Payout = Principal × [(1 + r/n)^n - 1]
+     * where:
+     * - r = annual rate (as decimal)
+     * - n = number of compounding periods per payout period
      */
-    private BigDecimal calculatePeriodicPayout(BigDecimal principal, BigDecimal ratePct, 
-                                               int tenure, String tenureUnit, String payoutFreq) {
+    private BigDecimal calculatePeriodicPayoutWithCompounding(
+            BigDecimal principal, 
+            BigDecimal ratePct, 
+            String payoutFreq,
+            String compoundingFreq) {
+        
         // Convert rate from percentage to decimal
         BigDecimal rate = ratePct.movePointLeft(2);
         
-        // Calculate total tenure in years
-        BigDecimal tenureInYears = toYears(tenure, tenureUnit);
+        // If compounding frequency is null, use payout frequency
+        if (compoundingFreq == null) compoundingFreq = payoutFreq;
         
-        // Calculate total number of payout periods
-        int periodsPerYear = switch (payoutFreq.toUpperCase()) {
+        // Get compounding periods per year
+        int compoundingPeriodsPerYear = switch (compoundingFreq.toUpperCase()) {
+            case "DAILY" -> 365;
             case "MONTHLY" -> 12;
             case "QUARTERLY" -> 4;
             case "YEARLY" -> 1;
-            default -> throw new IllegalArgumentException("Invalid payout_freq: " + payoutFreq);
+            default -> 4; // Default to quarterly
         };
         
-        // Total number of payout periods = tenure in years * periods per year
-        BigDecimal totalPeriods = tenureInYears.multiply(new BigDecimal(periodsPerYear));
+        // Get payout periods per year
+        int payoutPeriodsPerYear = switch (payoutFreq.toUpperCase()) {
+            case "MONTHLY" -> 12;
+            case "QUARTERLY" -> 4;
+            case "YEARLY" -> 1;
+            default -> 1; // Default to yearly
+        };
         
-        // Annual interest = Principal * Rate
-        BigDecimal annualInterest = principal.multiply(rate);
+        // Calculate number of compounding periods per payout period
+        // Example: If compounding is QUARTERLY (4/year) and payout is YEARLY (1/year)
+        //          then n = 4/1 = 4 (compounds 4 times per payout)
+        int n = compoundingPeriodsPerYear / payoutPeriodsPerYear;
         
-        // Interest per period = Annual Interest / Periods per year
-        BigDecimal interestPerPeriod = annualInterest.divide(
-            new BigDecimal(periodsPerYear), 
-            MathContext.DECIMAL64
+        if (n < 1) {
+            // Payout frequency is more frequent than compounding
+            // Example: compounding YEARLY but payout QUARTERLY
+            // In this case, use simple interest calculation
+            n = 1;
+            log.warn("Payout frequency ({}) is more frequent than compounding frequency ({}). Using simple interest calculation.", 
+                     payoutFreq, compoundingFreq);
+        }
+        
+        // Calculate compound interest for one payout period
+        // Formula: A = P × [(1 + r/m)^n - 1]
+        // where m = compounding periods per year, n = compounding periods per payout
+        double ratePerCompoundingPeriod = rate.doubleValue() / compoundingPeriodsPerYear;
+        double compoundFactor = Math.pow(1.0 + ratePerCompoundingPeriod, n);
+        double interestFactor = compoundFactor - 1.0;
+        
+        BigDecimal payoutAmount = principal.multiply(
+            new BigDecimal(interestFactor, MathContext.DECIMAL64)
         );
         
-        log.info("Non-cumulative payout calculation: Principal={}, Rate={}%, Tenure={} {}, " +
-                 "Payout freq={}, Periods per year={}, Total periods={}, Payout amount per period={}", 
-                 principal, ratePct, tenure, tenureUnit, payoutFreq, periodsPerYear, 
-                 totalPeriods, interestPerPeriod);
+        log.info("Non-cumulative payout calculation: Principal={}, Rate={}%, " +
+                 "Compounding freq={} ({}/year), Payout freq={} ({}/year), " +
+                 "Compounds per payout={}, Compound factor={}, Payout amount per period={}", 
+                 principal, ratePct, compoundingFreq, compoundingPeriodsPerYear, 
+                 payoutFreq, payoutPeriodsPerYear, n, compoundFactor, payoutAmount);
         
-        return interestPerPeriod.setScale(4, RoundingMode.HALF_UP);
+        return payoutAmount.setScale(4, RoundingMode.HALF_UP);
     }
     
     /**
