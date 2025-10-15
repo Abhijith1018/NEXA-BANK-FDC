@@ -1,7 +1,7 @@
 package com.btlab.fdcalculator.client;
 
-import com.btlab.fdcalculator.model.dto.CategoryDTO;
 import com.btlab.fdcalculator.model.dto.PagedProductRuleResponse;
+import com.btlab.fdcalculator.model.dto.ProductDetailsDTO;
 import com.btlab.fdcalculator.model.dto.ProductInterestDTO;
 import com.btlab.fdcalculator.model.dto.ProductRuleDTO;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -13,6 +13,10 @@ import java.util.List;
 
 @FeignClient(name = "pricing-api", url = "${pricing.api.url}")
 public interface PricingApiClient {
+
+    // Get product details including interestType and compoundingFrequency
+    @GetMapping("/api/products/{productCode}")
+    ProductDetailsDTO getProductDetails(@PathVariable("productCode") String productCode);
 
     // UPDATED: This now calls the correct interest rates endpoint
     @GetMapping("/api/products/{productCode}/interest-rates")

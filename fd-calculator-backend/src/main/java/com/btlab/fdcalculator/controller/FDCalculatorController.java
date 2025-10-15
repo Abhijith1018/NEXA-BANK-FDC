@@ -48,6 +48,11 @@ public class FDCalculatorController {
                - Returns payout_freq and payout_amount
                - Principal remains constant
             
+            **Product Configuration:**
+            - Interest type and compounding frequency are automatically fetched from Product & Pricing API
+            - These values are retrieved from /api/products/{productCode} endpoint
+            - Manual override is possible by providing these fields in the request
+            
             **Interest Rate Calculation:**
             - Base rate fetched from Product & Pricing API based on tenure
             - Additional rates applied based on customer categories
@@ -79,14 +84,12 @@ public class FDCalculatorController {
                 examples = {
                     @ExampleObject(
                         name = "Cumulative FD - Senior Citizen",
-                        summary = "Senior citizen cumulative FD with quarterly compounding",
+                        summary = "Senior citizen cumulative FD (interest_type and compounding_frequency fetched from product)",
                         value = """
                             {
                               "principal_amount": 100000,
                               "tenure_value": 5,
                               "tenure_unit": "YEARS",
-                              "interest_type": "COMPOUND",
-                              "compounding_frequency": "QUARTERLY",
                               "currency_code": "INR",
                               "category1_id": "SENIOR",
                               "category2_id": "GOLD",
@@ -97,14 +100,12 @@ public class FDCalculatorController {
                     ),
                     @ExampleObject(
                         name = "Non-Cumulative FD - Gold Customer",
-                        summary = "Gold customer non-cumulative FD with yearly payouts",
+                        summary = "Gold customer non-cumulative FD with yearly payouts (interest_type and compounding_frequency fetched from product)",
                         value = """
                             {
                               "principal_amount": 50000,
                               "tenure_value": 3,
                               "tenure_unit": "YEARS",
-                              "interest_type": "COMPOUND",
-                              "compounding_frequency": "QUARTERLY",
                               "currency_code": "INR",
                               "category1_id": "GOLD",
                               "cumulative": false,
@@ -115,14 +116,12 @@ public class FDCalculatorController {
                     ),
                     @ExampleObject(
                         name = "Employee FD - Monthly Payout",
-                        summary = "Employee non-cumulative FD with monthly interest payout",
+                        summary = "Employee non-cumulative FD with monthly interest payout (interest_type and compounding_frequency fetched from product)",
                         value = """
                             {
                               "principal_amount": 200000,
                               "tenure_value": 2,
                               "tenure_unit": "YEARS",
-                              "interest_type": "COMPOUND",
-                              "compounding_frequency": "MONTHLY",
                               "currency_code": "INR",
                               "category1_id": "EMP",
                               "cumulative": false,

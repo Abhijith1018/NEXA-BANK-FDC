@@ -56,16 +56,16 @@ public record FDCalculationRequest(
     String tenure_unit,
     
     @Schema(
-        description = "Type of interest calculation. SIMPLE = Simple interest (rarely used), COMPOUND = Compound interest (most common)",
+        description = "Type of interest calculation. SIMPLE = Simple interest (rarely used), COMPOUND = Compound interest (most common). If not provided, will be fetched from Product & Pricing API",
         example = "COMPOUND",
         allowableValues = {"SIMPLE", "COMPOUND"},
-        required = true
+        required = false
     )
     @Pattern(regexp = "SIMPLE|COMPOUND") 
     String interest_type,
     
     @Schema(
-        description = "Frequency of compounding. Required for COMPOUND interest type. Options: DAILY (365 times/year), MONTHLY (12 times/year), QUARTERLY (4 times/year), YEARLY (1 time/year)",
+        description = "Frequency of compounding. Required for COMPOUND interest type. Options: DAILY (365 times/year), MONTHLY (12 times/year), QUARTERLY (4 times/year), YEARLY (1 time/year). If not provided, will be fetched from Product & Pricing API",
         example = "QUARTERLY",
         allowableValues = {"DAILY", "MONTHLY", "QUARTERLY", "YEARLY"},
         required = false

@@ -3,6 +3,7 @@ package com.btlab.fdcalculator.service.impl;
 import com.btlab.fdcalculator.client.PricingApiClient;
 import com.btlab.fdcalculator.model.dto.FDCalculationRequest;
 import com.btlab.fdcalculator.model.dto.FDCalculationResponse;
+import com.btlab.fdcalculator.model.dto.ProductDetailsDTO;
 import com.btlab.fdcalculator.model.dto.ProductRuleDTO;
 import com.btlab.fdcalculator.model.entity.*;
 import com.btlab.fdcalculator.repository.*;
@@ -36,6 +37,21 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
     public FDCalculationResponse calculate(FDCalculationRequest req) {
         String productCode = req.product_code() == null ? "FD001" : req.product_code();
         
+        // Fetch product details to get interestType and compoundingFrequency
+        ProductDetailsDTO productDetails = pricingApiClient.getProductDetails(productCode);
+        log.info("Fetched product details for {}: interestType={}, compoundingFrequency={}", 
+            productCode, productDetails.getInterestType(), productDetails.getCompoundingFrequency());
+        
+        // Use values from product details if not provided in request
+        String interestType = req.interest_type() != null ? req.interest_type() : productDetails.getInterestType();
+        String compoundingFrequency = req.compounding_frequency() != null ? req.compounding_frequency() : productDetails.getCompoundingFrequency();
+        
+        if (interestType == null) {
+            throw new IllegalArgumentException("Interest type not found in request or product details");
+        }
+        
+        log.info("Using interestType={}, compoundingFrequency={}", interestType, compoundingFrequency);
+        
         // Validate the principal amount against product rules
         productRuleValidationService.validateAmount(productCode, req.principal_amount());
         
@@ -47,7 +63,7 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
         
         // Get base rate from Product & Pricing API based on tenure
         BigDecimal baseRate = getBaseRateFromApi(productCode, productSuffix, tenureInMonths, 
-            req.cumulative(), req.payout_freq(), req.compounding_frequency());
+            req.cumulative(), req.payout_freq(), compoundingFrequency);
         log.info("Base rate from API: {}%", baseRate);
         
         // Fetch category benefits from Product & Pricing API
@@ -99,32 +115,32 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             // Calculate periodic payout amount with compounding
             payoutAmount = calculatePeriodicPayoutWithCompounding(
                 req.principal_amount(), effectiveRate, payoutFreq, 
-                req.compounding_frequency());
+                compoundingFrequency);
             
             // For non-cumulative, maturity value is principal only
             maturityValue = req.principal_amount();
             
             // Calculate APY based on compounding frequency
             // Even though interest is paid out, it still compounds during the payout period
-            if (req.compounding_frequency() != null && !"SIMPLE".equalsIgnoreCase(req.interest_type())) {
-                apy = calcAPY(effectiveRate, req.compounding_frequency());
+            if (compoundingFrequency != null && !"SIMPLE".equalsIgnoreCase(interestType)) {
+                apy = calcAPY(effectiveRate, compoundingFrequency);
             } else {
                 apy = effectiveRate; // Simple interest or no compounding
             }
             
             log.info("Non-cumulative FD: Payout freq={}, Compounding freq={}, Payout amount={}, APY={}, Maturity=Principal only", 
-                payoutFreq, req.compounding_frequency(), payoutAmount, apy);
+                payoutFreq, compoundingFrequency, payoutAmount, apy);
         } else {
             // Cumulative: Interest compounded and paid at maturity
-            if ("SIMPLE".equalsIgnoreCase(req.interest_type())) {
+            if ("SIMPLE".equalsIgnoreCase(interestType)) {
                 maturityValue = simpleMaturity(
                     req.principal_amount(), effectiveRate, req.tenure_value(), req.tenure_unit());
                 apy = effectiveRate;
             } else {
                 maturityValue = compoundMaturity(
                     req.principal_amount(), effectiveRate, req.tenure_value(), req.tenure_unit(),
-                    req.compounding_frequency());
-                apy = calcAPY(effectiveRate, req.compounding_frequency());
+                    compoundingFrequency);
+                apy = calcAPY(effectiveRate, compoundingFrequency);
             }
             
             log.info("Cumulative FD: Maturity value={}", maturityValue);
@@ -135,8 +151,8 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             .principalAmount(req.principal_amount())
             .tenureValue(req.tenure_value())
             .tenureUnit(req.tenure_unit())
-            .interestType(req.interest_type())
-            .compoundingFrequency(req.compounding_frequency())
+            .interestType(interestType)
+            .compoundingFrequency(compoundingFrequency)
             .category1Code(req.category1_id())
             .category2Code(req.category2_id())
             .productCode(productCode)

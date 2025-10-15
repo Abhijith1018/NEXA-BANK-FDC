@@ -1,77 +1,142 @@
 openapi: 3.1.0
 info:
-  title: Product and Pricing API
-  description: Banking Product and Pricing Management APIs
+  title: Product and Pricing Management API
+  description: |-
+    # Comprehensive Banking Product & Pricing Management System
+
+    ## Overview
+    Enterprise-grade RESTful API for managing financial products, pricing structures, and product configurations in banking and financial institutions. This system provides complete lifecycle management for various financial products including Savings Accounts, Current Accounts, Fixed Deposits, Loans, Credit Cards, and more.
+
+    ## Key Features
+    - **Product Management**: Create, update, retrieve, and manage financial products with comprehensive attributes
+    - **Interest Rate Configuration**: Define simple and compound interest rates with tiered structures
+    - **Charge & Fee Management**: Configure product charges, fees, and pricing models
+    - **Balance Configuration**: Set minimum balance requirements, overdraft limits, and balance types
+    - **Business Rules Engine**: Define eligibility criteria, validation rules, and business logic
+    - **Transaction Types**: Configure allowed transaction types, limits, and channel availability
+    - **Communication Templates**: Manage customer notifications and communication workflows
+    - **Role-Based Access Control**: Define permissions and approval workflows
+
+    ## API Design Principles
+    - **RESTful Architecture**: Standard HTTP methods (GET, POST, PUT, DELETE)
+    - **Code-Based Routing**: All endpoints use business-friendly codes instead of technical IDs
+    - **Pagination Support**: Efficient data retrieval with page, size, and sort parameters
+    - **Comprehensive Validation**: Request validation using Jakarta Bean Validation
+    - **Audit Trail**: Automatic tracking of created/updated by and timestamps
+    - **Error Handling**: Standardized error responses with meaningful messages
+
+    ## Response Codes
+    - **200 OK**: Successful GET/PUT request
+    - **201 Created**: Successful POST request with resource creation
+    - **204 No Content**: Successful DELETE request
+    - **400 Bad Request**: Invalid request data or validation failure
+    - **404 Not Found**: Resource not found
+    - **500 Internal Server Error**: Server-side error
+
+    ## Getting Started
+    1. Browse the API endpoints organized by functional areas
+    2. Review the data models and required/optional fields
+    3. Use the 'Try it out' feature to test endpoints
+    4. Check example requests and responses for each operation
+
+    ## Authentication
+    This API requires authentication. Contact your system administrator for access credentials.
+
+    ## Support
+    For technical support, documentation, or API access requests, contact the Banking Labs support team.
   contact:
-    name: Banking Labs
+    name: Banking Labs Development Team
+    url: https://www.bankinglabs.com/support
     email: support@bankinglabs.com
   license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    name: Apache License 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0
+externalDocs:
+  description: Complete API Documentation & User Guide
+  url: https://docs.bankinglabs.com/product-pricing-api
 servers:
   - url: http://localhost:8080
-    description: Generated server url
+    description: Local Development Server
+  - url: https://api-dev.bankinglabs.com
+    description: Development Environment
+  - url: https://api-uat.bankinglabs.com
+    description: User Acceptance Testing Environment
+  - url: https://api.bankinglabs.com
+    description: Production Environment
 tags:
-  - name: Product Charges
-    description: Product charges management endpoints
-  - name: Product Roles
-    description: Product roles management endpoints
-  - name: Product Rules
-    description: Product rules management endpoints
-  - name: Product Balances
-    description: Product balances management endpoints
-  - name: Products
-    description: Product management endpoints
-  - name: Product Transactions
-    description: Product transactions management endpoints
-  - name: Product Communications
-    description: Product communications management endpoints
   - name: Product Interest Rates
-    description: Product interest rates management endpoints
+    description: This API provides a structured rate card for financial products like fixed deposits. It allows for the retrieval of precise interest rates based on the product's term length. For each term, the API returns a set of rates corresponding to various payout schedules, including cumulative and non-cumulative (monthly, quarterly, yearly) options.
+  - name: Product Transaction Types
+    description: API for managing allowed transaction types and transaction configuration for products. Transaction configurations define which operations are permitted on a product (DEPOSIT, WITHDRAWAL, TRANSFER, PAYMENT, etc.), transaction limits, processing rules, and channel availability (ATM, ONLINE, BRANCH, MOBILE). Each transaction type includes minimum/maximum amount limits, daily limits, and frequency restrictions. Essential for channel management, fraud prevention, and customer service optimization.
+  - name: Product Communication Templates
+    description: API for managing customer communication templates and notification configurations for products. Communication templates define automated messages sent to customers for various events (ACCOUNT_OPENING, TRANSACTION_ALERT, STATEMENT_GENERATION, PAYMENT_DUE, etc.). Supports multiple communication channels (EMAIL, SMS, PUSH_NOTIFICATION, IN_APP, POSTAL_MAIL) and communication types (TRANSACTIONAL, PROMOTIONAL, REGULATORY, STATEMENT). Critical for customer engagement, compliance notifications, and regulatory reporting.
+  - name: Product Balance Types
+    description: 'API for defining which balance types are supported/applicable for a financial product. For example, a Loan product would have: LOAN_PRINCIPAL, LOAN_INTEREST, OVERDRAFT, PENALTY. A Fixed Deposit product would have: FD_PRINCIPAL, FD_INTEREST. This simply indicates which balance types are relevant for the product.'
+  - name: Product Management
+    description: Comprehensive API for managing financial products including creation, retrieval, update, deletion, and search operations. Products can be of various types (SAVINGS, CURRENT, LOAN, etc.) and contain detailed configuration for pricing, charges, balances, communication templates, and business rules.
+  - name: Product Charges & Fees
+    description: Comprehensive API for managing product charges, fees, and pricing structures. Charges include account maintenance fees, transaction fees, processing charges, penalty fees, and service charges. Supports various charge types (FIXED, PERCENTAGE), calculation methods, frequency configurations (ONE_TIME, MONTHLY, QUARTERLY, ANNUALLY), and debit/credit indicators. Essential for revenue generation and transparent customer pricing.
+  - name: Product Roles & Permissions
+    description: An API for managing which user roles can access a specific financial product. It establishes a simple mapping between a product and one or more roles (e.g., 'OWNER', 'CO_OWNER', 'GUARDIAN'), effectively creating an access list. This controls product visibility and eligibility at a high level.
+  - name: Product Business Rules
+    description: This API is the definitive source for managing all business rules that govern a financial product. It allows you to configure these rules as key attributes, including balance limits (min/max), conditional interest rate bonuses (e.g., for 'Gold members' or 'under 18'), and the primary interest calculation method (simple vs. compound with its frequency). It's the central hub for a product's entire configurable DNA and operational logic.
 paths:
   /api/products/{productCode}:
     get:
       tags:
-        - Products
-      summary: Get product by code
+        - Product Management
+      summary: Retrieve a specific product by its unique code
+      description: 'Fetches complete details of a product identified by its unique product code. Returns comprehensive product information including all related entities: interest rates, charges, balances, roles, rules, transactions, and communication templates. This is the primary endpoint for retrieving detailed product information.'
       operationId: getProductByCode
       parameters:
         - name: productCode
           in: path
+          description: Unique product code identifier (e.g., SAV001, CURR001, LOAN001). This is a business-friendly identifier used across the system.
           required: true
           schema:
             type: string
+          example: SAV001
       responses:
         '200':
-          description: Product found
+          description: Product found successfully. Returns complete product details with all nested entities.
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/ProductDetailsDTO'
+              examples:
+                Savings Product Example:
+                  description: Savings Product Example
+                  value:
+                    productId: 123e4567-e89b-12d3-a456-426614174000
+                    productCode: SAV001
+                    productName: Premium Savings Account
         '404':
-          description: Product not found
+          description: Product not found with the specified product code. Verify the product code and try again.
           content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductDetailsDTO'
+            application/json:
+              example:
+                error: Resource not found
+                message: 'Product not found: SAV001'
+                timestamp: '2025-10-10T10:30:00'
         '500':
-          description: Internal server error
+          description: Internal server error occurred while retrieving the product
           content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductDetailsDTO'
+            application/json: {}
     put:
       tags:
-        - Products
-      summary: Update a product
+        - Product Management
+      summary: Update an existing product
+      description: 'Updates the details of an existing product identified by its product code. This endpoint allows modification of product attributes including name, description, status, pricing information, and effective dates. The product code in the path parameter identifies which product to update. Note: This updates only the core product details; use specific sub-resource endpoints to update interest rates, charges, balances, etc.'
       operationId: updateProduct
       parameters:
         - name: productCode
           in: path
+          description: Unique product code of the product to be updated
           required: true
           schema:
             type: string
+          example: SAV001
       requestBody:
         content:
           application/json:
@@ -80,29 +145,66 @@ paths:
         required: true
       responses:
         '200':
-          description: OK
+          description: Product updated successfully. Returns the updated product details with latest audit information.
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/ProductDetailsDTO'
+        '400':
+          description: 'Invalid request data. Possible reasons: - Missing required fields - Invalid enum values - Invalid date format or range - Product code mismatch'
+          content:
+            application/json:
+              example:
+                error: Validation failed
+                message: Invalid product type
+                timestamp: '2025-10-10T10:30:00'
+        '404':
+          description: Product not found with the specified product code
+          content:
+            application/json:
+              example:
+                error: Resource not found
+                message: 'Product not found: SAV001'
+                timestamp: '2025-10-10T10:30:00'
+        '500':
+          description: Internal server error occurred while updating the product
+          content:
+            application/json: {}
     delete:
       tags:
-        - Products
+        - Product Management
       summary: Delete a product
+      description: 'Permanently removes a product from the system identified by its product code. This operation is irreversible and will cascade delete all related entities including: interest rates, charges, balances, roles, rules, transactions, and communication templates. Use with caution in production environments. Consider deactivating products instead of deletion by updating their status to INACTIVE for audit trail purposes.'
       operationId: deleteProduct
       parameters:
         - name: productCode
           in: path
+          description: Unique product code of the product to be deleted. This operation cannot be undone.
           required: true
           schema:
             type: string
+          example: SAV001
       responses:
-        '200':
-          description: OK
+        '204':
+          description: Product deleted successfully. No content returned. All related entities (interest rates, charges, balances, etc.) have also been removed.
+          content:
+            application/json: {}
+        '404':
+          description: Product not found with the specified product code. The product may have already been deleted.
+          content:
+            application/json:
+              example:
+                error: Resource not found
+                message: 'Product not found: SAV001'
+                timestamp: '2025-10-10T10:30:00'
+        '500':
+          description: Internal server error occurred while deleting the product. The product may be referenced by other entities or systems.
+          content:
+            application/json: {}
   /api/products/{productCode}/transactions/{transactionCode}:
     get:
       tags:
-        - Product Transactions
+        - Product Transaction Types
       summary: Get a specific transaction
       operationId: getTransactionByCode
       parameters:
@@ -131,7 +233,7 @@ paths:
                 $ref: '#/components/schemas/ProductTransactionDTO'
     put:
       tags:
-        - Product Transactions
+        - Product Transaction Types
       summary: Update a transaction
       operationId: updateTransaction
       parameters:
@@ -172,7 +274,7 @@ paths:
                 $ref: '#/components/schemas/ProductTransactionDTO'
     delete:
       tags:
-        - Product Transactions
+        - Product Transaction Types
       summary: Delete a transaction
       operationId: deleteTransaction
       parameters:
@@ -194,7 +296,7 @@ paths:
   /api/products/{productCode}/rules/{ruleCode}:
     get:
       tags:
-        - Product Rules
+        - Product Business Rules
       summary: Get a specific rule
       operationId: getRuleByCode
       parameters:
@@ -223,7 +325,7 @@ paths:
                 $ref: '#/components/schemas/ProductRuleDTO'
     put:
       tags:
-        - Product Rules
+        - Product Business Rules
       summary: Update a rule
       operationId: updateRule
       parameters:
@@ -264,7 +366,7 @@ paths:
                 $ref: '#/components/schemas/ProductRuleDTO'
     delete:
       tags:
-        - Product Rules
+        - Product Business Rules
       summary: Delete a rule
       operationId: deleteRule
       parameters:
@@ -286,7 +388,7 @@ paths:
   /api/products/{productCode}/roles/{roleCode}:
     get:
       tags:
-        - Product Roles
+        - Product Roles & Permissions
       summary: Get a specific role
       operationId: getRoleByCode
       parameters:
@@ -315,7 +417,7 @@ paths:
                 $ref: '#/components/schemas/ProductRoleDTO'
     put:
       tags:
-        - Product Roles
+        - Product Roles & Permissions
       summary: Update a role
       operationId: updateRole
       parameters:
@@ -356,7 +458,7 @@ paths:
                 $ref: '#/components/schemas/ProductRoleDTO'
     delete:
       tags:
-        - Product Roles
+        - Product Roles & Permissions
       summary: Delete a role
       operationId: deleteRole
       parameters:
@@ -470,7 +572,7 @@ paths:
   /api/products/{productCode}/communications/{commCode}:
     get:
       tags:
-        - Product Communications
+        - Product Communication Templates
       summary: Get a specific communication
       operationId: getCommunicationByCode
       parameters:
@@ -499,7 +601,7 @@ paths:
                 $ref: '#/components/schemas/ProductCommunicationDTO'
     put:
       tags:
-        - Product Communications
+        - Product Communication Templates
       summary: Update a communication
       operationId: updateCommunication
       parameters:
@@ -540,7 +642,7 @@ paths:
                 $ref: '#/components/schemas/ProductCommunicationDTO'
     delete:
       tags:
-        - Product Communications
+        - Product Communication Templates
       summary: Delete a communication
       operationId: deleteCommunication
       parameters:
@@ -562,7 +664,7 @@ paths:
   /api/products/{productCode}/charges/{chargeCode}:
     get:
       tags:
-        - Product Charges
+        - Product Charges & Fees
       summary: Get a specific charge
       operationId: getChargeByCode
       parameters:
@@ -591,7 +693,7 @@ paths:
                 $ref: '#/components/schemas/ProductChargeDTO'
     put:
       tags:
-        - Product Charges
+        - Product Charges & Fees
       summary: Update a charge
       operationId: updateCharge
       parameters:
@@ -632,7 +734,7 @@ paths:
                 $ref: '#/components/schemas/ProductChargeDTO'
     delete:
       tags:
-        - Product Charges
+        - Product Charges & Fees
       summary: Delete a charge
       operationId: deleteCharge
       parameters:
@@ -651,40 +753,42 @@ paths:
           description: Charge deleted successfully
         '404':
           description: Charge or product not found
-  /api/products/{productCode}/balances/{balanceCode}:
+  /api/products/{productCode}/balances/{balanceType}:
     get:
       tags:
-        - Product Balances
-      summary: Get a specific balance
-      operationId: getBalanceByCode
+        - Product Balance Types
+      summary: Get a specific balance type for a product
+      description: Returns details of a specific balance type if it's applicable for this product
+      operationId: getBalanceByType
       parameters:
         - name: productCode
           in: path
           required: true
           schema:
             type: string
-        - name: balanceCode
+        - name: balanceType
           in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Balance found
+          description: Balance type found
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductBalanceDTO'
         '404':
-          description: Balance or product not found
+          description: Balance type not found or product not found
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductBalanceDTO'
     put:
       tags:
-        - Product Balances
-      summary: Update a balance
+        - Product Balance Types
+      summary: Update a balance type
+      description: Update properties of a balance type for this product
       operationId: updateBalance
       parameters:
         - name: productCode
@@ -692,7 +796,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: balanceCode
+        - name: balanceType
           in: path
           required: true
           schema:
@@ -705,27 +809,28 @@ paths:
         required: true
       responses:
         '200':
-          description: Balance updated successfully
+          description: Balance type updated successfully
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductBalanceDTO'
         '400':
-          description: Invalid balance data
+          description: Invalid balance type data
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductBalanceDTO'
         '404':
-          description: Balance or product not found
+          description: Balance type not found or product not found
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductBalanceDTO'
     delete:
       tags:
-        - Product Balances
-      summary: Delete a balance
+        - Product Balance Types
+      summary: Remove a balance type from a product
+      description: Mark a balance type as no longer applicable for this product
       operationId: deleteBalance
       parameters:
         - name: productCode
@@ -733,39 +838,47 @@ paths:
           required: true
           schema:
             type: string
-        - name: balanceCode
+        - name: balanceType
           in: path
           required: true
           schema:
             type: string
       responses:
         '204':
-          description: Balance deleted successfully
+          description: Balance type removed successfully
         '404':
-          description: Balance or product not found
+          description: Balance type not found or product not found
   /api/products:
     get:
       tags:
-        - Products
-      summary: Get all products
+        - Product Management
+      summary: Retrieve all products with pagination
+      description: Fetches a paginated list of all products in the system. Supports sorting and pagination parameters. Use query parameters to control page size, page number, and sort order. Default page size is 20. Results include complete product details along with all related entities (interest rates, charges, balances, roles, rules, transactions, communications).
       operationId: getAllProducts
       parameters:
         - name: pageable
           in: query
+          description: 'Pagination and sorting parameters. Example: ?page=0&size=20&sort=productName,asc - page: Page number (0-indexed, default: 0) - size: Number of items per page (default: 20, max: 100) - sort: Sort field and direction (e.g., productCode,desc)'
           required: true
           schema:
             $ref: '#/components/schemas/Pageable'
+          example: page=0&size=20&sort=productName,asc
       responses:
         '200':
-          description: OK
+          description: Successfully retrieved paginated list of products. Returns a Page object containing product details, total elements, total pages, current page number, and pagination metadata.
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: '#/components/schemas/PageProductDetailsDTO'
+                $ref: '#/components/schemas/Page'
+        '500':
+          description: Internal server error occurred while fetching products
+          content:
+            application/json: {}
     post:
       tags:
-        - Products
-      summary: Create a new product
+        - Product Management
+      summary: Create a new financial product
+      description: Creates a new product in the system with comprehensive details including product type, status, currency, pricing information, and effective/expiry dates. The product code must be unique across the system. Upon successful creation, the product will be assigned a unique identifier and audit timestamps.
       operationId: createProduct
       requestBody:
         content:
@@ -774,16 +887,28 @@ paths:
               $ref: '#/components/schemas/CreateOrUpdateProductRequestDTO'
         required: true
       responses:
-        '200':
-          description: OK
+        '201':
+          description: Product created successfully. Returns the complete product details including system-generated ID and audit information.
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/ProductDetailsDTO'
+        '400':
+          description: 'Invalid request data. Possible reasons: - Missing required fields (productCode, productName, productType) - Invalid enum values for productType, status, or currency - Product code already exists - Invalid date format or date range'
+          content:
+            application/json:
+              example:
+                error: Validation failed
+                message: Product code is required
+                timestamp: '2025-10-10T10:30:00'
+        '500':
+          description: Internal server error occurred while processing the request
+          content:
+            application/json: {}
   /api/products/{productCode}/transactions:
     get:
       tags:
-        - Product Transactions
+        - Product Transaction Types
       summary: Get all transactions for a product
       operationId: getTransactions
       parameters:
@@ -812,7 +937,7 @@ paths:
                 $ref: '#/components/schemas/PageProductTransactionDTO'
     post:
       tags:
-        - Product Transactions
+        - Product Transaction Types
       summary: Add a new transaction to a product
       operationId: addTransaction
       parameters:
@@ -849,7 +974,7 @@ paths:
   /api/products/{productCode}/rules:
     get:
       tags:
-        - Product Rules
+        - Product Business Rules
       summary: Get all rules for a product
       operationId: getRules
       parameters:
@@ -878,7 +1003,7 @@ paths:
                 $ref: '#/components/schemas/PageProductRuleDTO'
     post:
       tags:
-        - Product Rules
+        - Product Business Rules
       summary: Add a new rule to a product
       operationId: addRule
       parameters:
@@ -915,7 +1040,7 @@ paths:
   /api/products/{productCode}/roles:
     get:
       tags:
-        - Product Roles
+        - Product Roles & Permissions
       summary: Get all roles for a product
       operationId: getRoles
       parameters:
@@ -944,7 +1069,7 @@ paths:
                 $ref: '#/components/schemas/PageProductRoleDTO'
     post:
       tags:
-        - Product Roles
+        - Product Roles & Permissions
       summary: Add a new role to a product
       operationId: addRole
       parameters:
@@ -1011,14 +1136,17 @@ paths:
     post:
       tags:
         - Product Interest Rates
-      summary: Add a new interest rate to a product
+      summary: Add a new interest rate configuration to a product
+      description: Adds a specific interest rate to a product's rate card. This configuration is focused solely on the duration of the term and the credit frequency, linking them to a specific interest percentage. The underlying calculation rules (e.g., simple/compound) and compounding frequency are managed at the product level.
       operationId: addInterestRate
       parameters:
         - name: productCode
           in: path
+          description: Product code to which the interest rate will be added
           required: true
           schema:
             type: string
+          example: SAV001
       requestBody:
         content:
           application/json:
@@ -1027,27 +1155,27 @@ paths:
         required: true
       responses:
         '201':
-          description: Interest rate created successfully
+          description: Interest rate created successfully. Returns the complete rate configuration with system-generated ID.
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/ProductInterestDTO'
         '400':
-          description: Invalid interest rate data
+          description: 'Invalid interest rate data. Possible reasons: - Missing required fields (rateCode, rateType, interestRate) - Invalid enum values - Rate code already exists for this product - Invalid date range - Invalid balance range (min > max)'
           content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductInterestDTO'
+            application/json: {}
         '404':
-          description: Product not found
+          description: Product not found with the specified product code
           content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductInterestDTO'
+            application/json: {}
+        '500':
+          description: Internal server error
+          content:
+            application/json: {}
   /api/products/{productCode}/communications:
     get:
       tags:
-        - Product Communications
+        - Product Communication Templates
       summary: Get all communications for a product
       operationId: getCommunications
       parameters:
@@ -1076,7 +1204,7 @@ paths:
                 $ref: '#/components/schemas/PageProductCommunicationDTO'
     post:
       tags:
-        - Product Communications
+        - Product Communication Templates
       summary: Add a new communication to a product
       operationId: addCommunication
       parameters:
@@ -1113,7 +1241,7 @@ paths:
   /api/products/{productCode}/charges:
     get:
       tags:
-        - Product Charges
+        - Product Charges & Fees
       summary: Get all charges for a product
       operationId: getCharges
       parameters:
@@ -1142,7 +1270,7 @@ paths:
                 $ref: '#/components/schemas/PageProductChargeDTO'
     post:
       tags:
-        - Product Charges
+        - Product Charges & Fees
       summary: Add a new charge to a product
       operationId: addCharge
       parameters:
@@ -1179,8 +1307,9 @@ paths:
   /api/products/{productCode}/balances:
     get:
       tags:
-        - Product Balances
-      summary: Get all balances for a product
+        - Product Balance Types
+      summary: Get all balance types for a product
+      description: Returns all balance types that are applicable/supported for this product
       operationId: getBalances
       parameters:
         - name: productCode
@@ -1195,7 +1324,7 @@ paths:
             $ref: '#/components/schemas/Pageable'
       responses:
         '200':
-          description: Balances retrieved successfully
+          description: Balance types retrieved successfully
           content:
             '*/*':
               schema:
@@ -1208,8 +1337,9 @@ paths:
                 $ref: '#/components/schemas/PageProductBalanceDTO'
     post:
       tags:
-        - Product Balances
-      summary: Add a new balance to a product
+        - Product Balance Types
+      summary: Add a balance type to a product
+      description: Marks a specific balance type as applicable for this product
       operationId: addBalance
       parameters:
         - name: productCode
@@ -1225,13 +1355,13 @@ paths:
         required: true
       responses:
         '201':
-          description: Balance created successfully
+          description: Balance type added successfully
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductBalanceDTO'
         '400':
-          description: Invalid balance data
+          description: Invalid balance type or already exists
           content:
             '*/*':
               schema:
@@ -1245,51 +1375,63 @@ paths:
   /api/products/search:
     get:
       tags:
-        - Products
-      summary: Search products with filters
+        - Product Management
+      summary: Search and filter products
+      description: Advanced search functionality to filter products based on multiple criteria. Supports filtering by product type (SAVINGS, CURRENT, LOAN, etc.), status (ACTIVE, INACTIVE, PENDING), and date range (effective date between start and end dates). All parameters are optional and can be combined. If no parameters are provided, returns all products. Date parameters should be in ISO format (YYYY-MM-DD).
       operationId: searchProducts
       parameters:
         - name: productType
           in: query
+          description: 'Filter by product type. Valid values: SAVINGS, CURRENT, LOAN, CREDIT_CARD, FIXED_DEPOSIT, RECURRING_DEPOSIT. Case-insensitive. Returns all products of the specified type.'
           required: false
           schema:
             type: string
+          example: SAVINGS
         - name: status
           in: query
+          description: 'Filter by product status. Valid values: ACTIVE, INACTIVE, PENDING, SUSPENDED, CLOSED. Case-insensitive. Returns all products with the specified status.'
           required: false
           schema:
             type: string
+          example: ACTIVE
         - name: startDate
           in: query
+          description: 'Start date for date range filter (inclusive). Format: YYYY-MM-DD. Filters products by effective date. Must be used together with endDate parameter.'
           required: false
           schema:
             type: string
+          example: '2025-01-01'
         - name: endDate
           in: query
+          description: 'End date for date range filter (inclusive). Format: YYYY-MM-DD. Filters products by effective date. Must be used together with startDate parameter. Must be equal to or after startDate.'
           required: false
           schema:
             type: string
+          example: '2025-12-31'
       responses:
         '200':
-          description: Products found
+          description: Search completed successfully. Returns a list of products matching the specified criteria. Empty list is returned if no products match the search criteria.
           content:
-            '*/*':
+            application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProductDetailsDTO'
+                type: string
+        '400':
+          description: 'Invalid search parameters. Possible reasons: - Invalid product type or status enum value - Invalid date format (must be YYYY-MM-DD) - End date is before start date - Missing end date when start date is provided, or vice versa'
+          content:
+            application/json:
+              example:
+                error: Validation failed
+                message: Invalid date format. Use ISO format (YYYY-MM-DD)
+                timestamp: '2025-10-10T10:30:00'
         '500':
-          description: Internal server error
+          description: Internal server error occurred while searching products
           content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProductDetailsDTO'
+            application/json: {}
 components:
   schemas:
     CreateOrUpdateProductRequestDTO:
       type: object
+      description: 'Product creation request containing all required and optional product details. Required fields: productCode (unique), productName, productType. Optional fields: description, status, currency, dates, pricing information.'
       properties:
         productCode:
           type: string
@@ -1311,6 +1453,10 @@ components:
         expr_date:
           type: string
           format: date-time
+        interestType:
+          type: string
+        compoundingFrequency:
+          type: string
       required:
         - currency
         - efctv_date
@@ -1326,12 +1472,17 @@ components:
         balanceType:
           type: string
           enum:
-            - PRINCIPAL
-            - INTEREST
+            - LOAN_PRINCIPAL
+            - LOAN_INTEREST
+            - FD_PRINCIPAL
+            - FD_INTEREST
+            - OVERDRAFT
             - PENALTY
-            - FEES
-        amount:
-          type: number
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
     ProductChargeDTO:
       type: object
       properties:
@@ -1346,6 +1497,7 @@ components:
             - INTEREST
             - FEE
             - TAX
+            - PENALTY
         calculationType:
           type: string
           enum:
@@ -1413,6 +1565,19 @@ components:
             - ACTIVE
             - INACTIVE
             - DRAFT
+        interestType:
+          type: string
+          enum:
+            - SIMPLE
+            - COMPOUND
+        compoundingFrequency:
+          type: string
+          enum:
+            - DAILY
+            - MONTHLY
+            - QUARTERLY
+            - SEMI_ANNUALLY
+            - ANNUALLY
         productRules:
           type: array
           items:
@@ -1608,6 +1773,7 @@ components:
         - roleType
     ProductInterestRequestDTO:
       type: object
+      description: Interest rate configuration details including rate code, type, percentage, calculation method, balance ranges, and effective dates
       properties:
         rateCode:
           type: string
@@ -1690,6 +1856,7 @@ components:
             - INTEREST
             - FEE
             - TAX
+            - PENALTY
         calculationType:
           type: string
           enum:
@@ -1718,26 +1885,18 @@ components:
     ProductBalanceRequestDTO:
       type: object
       properties:
-        balanceCode:
-          type: string
-          minLength: 1
-        balanceName:
-          type: string
-          minLength: 1
         balanceType:
           type: string
           enum:
-            - PRINCIPAL
-            - INTEREST
+            - LOAN_PRINCIPAL
+            - LOAN_INTEREST
+            - FD_PRINCIPAL
+            - FD_INTEREST
+            - OVERDRAFT
             - PENALTY
-            - FEES
-        description:
-          type: string
-        active:
+        isActive:
           type: boolean
       required:
-        - balanceCode
-        - balanceName
         - balanceType
     Pageable:
       type: object
@@ -1754,43 +1913,45 @@ components:
           type: array
           items:
             type: string
-    PageProductDetailsDTO:
+    Page:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
           type: boolean
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
-        numberOfElements:
-          type: integer
-          format: int32
         size:
           type: integer
           format: int32
         content:
           type: array
-          items:
-            $ref: '#/components/schemas/ProductDetailsDTO'
+          items: {}
         number:
           type: integer
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean
     PageableObject:
       type: object
       properties:
-        unpaged:
-          type: boolean
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/SortObject'
         paged:
           type: boolean
         pageNumber:
@@ -1799,38 +1960,30 @@ components:
         pageSize:
           type: integer
           format: int32
-        offset:
-          type: integer
-          format: int64
-        sort:
-          $ref: '#/components/schemas/SortObject'
+        unpaged:
+          type: boolean
     SortObject:
       type: object
       properties:
-        unsorted:
+        empty:
           type: boolean
         sorted:
           type: boolean
-        empty:
+        unsorted:
           type: boolean
     PageProductTransactionDTO:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
           type: boolean
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
-        numberOfElements:
-          type: integer
-          format: int32
         size:
           type: integer
           format: int32
@@ -1843,26 +1996,26 @@ components:
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean
     PageProductRuleDTO:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
           type: boolean
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
-        numberOfElements:
-          type: integer
-          format: int32
         size:
           type: integer
           format: int32
@@ -1875,26 +2028,26 @@ components:
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean
     PageProductRoleDTO:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
           type: boolean
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
-        numberOfElements:
-          type: integer
-          format: int32
         size:
           type: integer
           format: int32
@@ -1907,26 +2060,26 @@ components:
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean
     PageProductInterestDTO:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
           type: boolean
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
-        numberOfElements:
-          type: integer
-          format: int32
         size:
           type: integer
           format: int32
@@ -1939,26 +2092,26 @@ components:
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean
     PageProductCommunicationDTO:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
           type: boolean
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
-        numberOfElements:
-          type: integer
-          format: int32
         size:
           type: integer
           format: int32
@@ -1971,26 +2124,26 @@ components:
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean
     PageProductChargeDTO:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
           type: boolean
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
-        numberOfElements:
-          type: integer
-          format: int32
         size:
           type: integer
           format: int32
@@ -2003,26 +2156,26 @@ components:
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean
     PageProductBalanceDTO:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
           type: boolean
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
-        numberOfElements:
-          type: integer
-          format: int32
         size:
           type: integer
           format: int32
@@ -2035,5 +2188,10 @@ components:
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean

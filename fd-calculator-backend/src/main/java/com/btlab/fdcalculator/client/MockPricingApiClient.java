@@ -1,6 +1,7 @@
 package com.btlab.fdcalculator.client;
 
 import com.btlab.fdcalculator.model.dto.PagedProductRuleResponse;
+import com.btlab.fdcalculator.model.dto.ProductDetailsDTO;
 import com.btlab.fdcalculator.model.dto.ProductInterestDTO;
 import com.btlab.fdcalculator.model.dto.ProductRuleDTO;
 import org.springframework.context.annotation.Profile;
@@ -12,6 +13,20 @@ import java.util.List;
 @Component
 @Profile("mock")
 public class MockPricingApiClient implements PricingApiClient {
+
+    @Override
+    public ProductDetailsDTO getProductDetails(String productCode) {
+        // Return mock product details with interestType and compoundingFrequency
+        ProductDetailsDTO productDetails = new ProductDetailsDTO();
+        productDetails.setProductCode(productCode);
+        productDetails.setProductName("Fixed Deposit Product");
+        productDetails.setProductType("FIXED_DEPOSIT");
+        productDetails.setCurrency("INR");
+        productDetails.setStatus("ACTIVE");
+        productDetails.setInterestType("COMPOUND");
+        productDetails.setCompoundingFrequency("QUARTERLY");
+        return productDetails;
+    }
 
     @Override
     public List<ProductInterestDTO> getInterestRates(String productCode) {
