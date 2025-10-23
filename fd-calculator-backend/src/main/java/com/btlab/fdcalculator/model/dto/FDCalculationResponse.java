@@ -65,5 +65,21 @@ public record FDCalculationResponse(
         example = "123",
         required = true
     )
-    Long result_id
+    Long result_id,
+    
+    @Schema(
+        description = "Primary customer category code used in calculation. Null if no category1 was applied",
+        example = "SENIOR",
+        allowableValues = {"SENIOR", "JR", "GOLD", "SILVER", "PLAT", "EMP", "DY", "MIN", "MAX", "MAXINT"},
+        nullable = true
+    )
+    String category1_id,
+    
+    @Schema(
+        description = "Secondary customer category code used in calculation. Null if no category2 was applied",
+        example = "GOLD",
+        allowableValues = {"SENIOR", "JR", "GOLD", "SILVER", "PLAT", "EMP", "DY", "MIN", "MAX", "MAXINT"},
+        nullable = true
+    )
+    String category2_id
 ) {}

@@ -177,7 +177,9 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             res.getPayoutFreq(),
             res.getPayoutAmount(),
             in.getCalcId(),
-            res.getResultId()
+            res.getResultId(),
+            in.getCategory1Code(),
+            in.getCategory2Code()
         );
     }
 
@@ -193,7 +195,9 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             res.getPayoutFreq(),
             res.getPayoutAmount(),
             res.getCalc().getCalcId(),
-            res.getResultId()
+            res.getResultId(),
+            res.getCalc().getCategory1Code(),
+            res.getCalc().getCategory2Code()
         );
     }
 

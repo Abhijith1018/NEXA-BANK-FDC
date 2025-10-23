@@ -154,7 +154,9 @@ public class FDCalculatorController {
                               "payout_freq": null,
                               "payout_amount": null,
                               "calc_id": 123,
-                              "result_id": 123
+                              "result_id": 123,
+                              "category1_id": "SENIOR",
+                              "category2_id": "GOLD"
                             }
                             """
                     ),
@@ -170,7 +172,9 @@ public class FDCalculatorController {
                               "payout_freq": "YEARLY",
                               "payout_amount": 5325.38,
                               "calc_id": 124,
-                              "result_id": 124
+                              "result_id": 124,
+                              "category1_id": "GOLD",
+                              "category2_id": null
                             }
                             """
                     )

@@ -84,7 +84,7 @@ public class OpenApiConfig {
                     - **SILVER**: Silver Customer (0.15% extra)
                     - **PLAT**: Platinum Customer (0.35% extra)
                     - **EMP**: Employee (1.00% extra)
-                    - **DY**: Divyang (1.25% extra)
+                    - **DY**: Digi youth (1.25% extra)
                     
                     ## Product Rules Validation
                     Each FD is validated against product-specific rules:
