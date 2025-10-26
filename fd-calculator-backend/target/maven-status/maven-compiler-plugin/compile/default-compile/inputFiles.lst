@@ -1,8 +1,10 @@
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/FdCalculatorApplication.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/client/MockPricingApiClient.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/client/PricingApiClient.java
+/Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/config/CorsConfig.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/config/FeignClientConfig.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/config/MockDataSeeder.java
+/Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/config/OpenApiConfig.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/controller/AdminController.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/controller/FDCalculatorController.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/controller/ReferenceDataController.java
@@ -12,6 +14,7 @@
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/model/dto/FDCalculationRequest.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/model/dto/FDCalculationResponse.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/model/dto/PagedProductRuleResponse.java
+/Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/model/dto/ProductDetailsDTO.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/model/dto/ProductInterestDTO.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/model/dto/ProductRuleDTO.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/model/dto/RateDTO.java
