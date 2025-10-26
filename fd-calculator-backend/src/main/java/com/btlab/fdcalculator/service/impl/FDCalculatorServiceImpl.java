@@ -10,6 +10,7 @@ import com.btlab.fdcalculator.repository.*;
 import com.btlab.fdcalculator.service.FDCalculatorService;
 import com.btlab.fdcalculator.service.ProductRuleValidationService;
 import com.btlab.fdcalculator.service.RateCacheService;
+import com.btlab.fdcalculator.util.CurrencyUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -146,8 +147,21 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             log.info("Cumulative FD: Maturity value={}", maturityValue);
         }
 
+        // Get currency code for formatting
+        String currencyCode = req.currency_code() != null ? req.currency_code() : "INR";
+        
+        // Apply currency-specific formatting (round down)
+        maturityValue = CurrencyUtil.formatAmount(maturityValue, currencyCode);
+        if (payoutAmount != null) {
+            payoutAmount = CurrencyUtil.formatAmount(payoutAmount, currencyCode);
+        }
+        
+        // Format rates (4 decimals, round down)
+        effectiveRate = CurrencyUtil.formatRate(effectiveRate);
+        apy = CurrencyUtil.formatRate(apy);
+
         FDCalculationInput in = inputRepo.save(FDCalculationInput.builder()
-            .currencyCode(req.currency_code())
+            .currencyCode(currencyCode)
             .principalAmount(req.principal_amount())
             .tenureValue(req.tenure_value())
             .tenureUnit(req.tenure_unit())

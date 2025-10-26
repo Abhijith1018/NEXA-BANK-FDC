@@ -6,12 +6,18 @@ import java.math.BigDecimal;
 /**
  * Response DTO containing Fixed Deposit calculation results
  * Includes both cumulative and non-cumulative FD details
+ * 
+ * Currency-specific decimal precision:
+ * - INR: 2 decimal places
+ * - JPY: 0 decimal places (no decimals)
+ * - AED: 3 decimal places
+ * All amounts are rounded down
  */
-@Schema(description = "Fixed Deposit calculation result with maturity details, interest rates, and periodic payout information")
+@Schema(description = "Fixed Deposit calculation result with maturity details, interest rates, and periodic payout information. Amounts are formatted according to currency rules (INR: 2 decimals, JPY: 0 decimals, AED: 3 decimals, rounded down)")
 public record FDCalculationResponse(
     
     @Schema(
-        description = "Maturity value at the end of tenure. For cumulative FD: Principal + accumulated interest. For non-cumulative FD: Same as principal (since interest is paid out periodically)",
+        description = "Maturity value at the end of tenure. For cumulative FD: Principal + accumulated interest. For non-cumulative FD: Same as principal (since interest is paid out periodically). Formatted with currency-specific decimals (INR: 2, JPY: 0, AED: 3), rounded down",
         example = "164361.50",
         required = true
     )
@@ -25,14 +31,14 @@ public record FDCalculationResponse(
     String maturity_date,
     
     @Schema(
-        description = "Annual Percentage Yield (APY) - The actual annual rate of return accounting for compounding. APY = (1 + r/n)^n - 1, where n = compounding periods per year. For example, 10.25% quarterly compounded = 10.65% APY",
+        description = "Annual Percentage Yield (APY) - The actual annual rate of return accounting for compounding. APY = (1 + r/n)^n - 1, where n = compounding periods per year. Always 4 decimal places, rounded down",
         example = "10.6508",
         required = true
     )
     BigDecimal apy,
     
     @Schema(
-        description = "Effective interest rate after applying all category benefits. This is the nominal annual rate (base rate + category bonuses), not accounting for compounding",
+        description = "Effective interest rate after applying all category benefits. This is the nominal annual rate (base rate + category bonuses), not accounting for compounding. Always 4 decimal places, rounded down",
         example = "10.2500",
         required = true
     )
@@ -47,7 +53,7 @@ public record FDCalculationResponse(
     String payout_freq,
     
     @Schema(
-        description = "Interest amount paid per payout period for non-cumulative FDs. Null for cumulative FDs. Calculated using compound interest formula: P × [(1 + r/m)^n - 1], where m = compounding periods per year, n = compounding periods per payout",
+        description = "Interest amount paid per payout period for non-cumulative FDs. Null for cumulative FDs. Calculated using compound interest formula: P × [(1 + r/m)^n - 1], where m = compounding periods per year, n = compounding periods per payout. Formatted with currency-specific decimals (INR: 2, JPY: 0, AED: 3), rounded down",
         example = "5325.38",
         nullable = true
     )
