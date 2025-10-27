@@ -156,7 +156,11 @@ public class FDCalculatorController {
                               "calc_id": 123,
                               "result_id": 123,
                               "category1_id": "SENIOR",
-                              "category2_id": "GOLD"
+                              "category2_id": "GOLD",
+                              "product_code": "FD001",
+                              "principal_amount": 100000.00,
+                              "tenure_value": 5,
+                              "tenure_unit": "YEARS"
                             }
                             """
                     ),
@@ -174,7 +178,11 @@ public class FDCalculatorController {
                               "calc_id": 124,
                               "result_id": 124,
                               "category1_id": "GOLD",
-                              "category2_id": null
+                              "category2_id": null,
+                              "product_code": "FD001",
+                              "principal_amount": 50000.00,
+                              "tenure_value": 3,
+                              "tenure_unit": "YEARS"
                             }
                             """
                     )

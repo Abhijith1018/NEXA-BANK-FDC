@@ -193,7 +193,11 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             in.getCalcId(),
             res.getResultId(),
             in.getCategory1Code(),
-            in.getCategory2Code()
+            in.getCategory2Code(),
+            in.getProductCode(),
+            in.getPrincipalAmount(),
+            in.getTenureValue(),
+            in.getTenureUnit()
         );
     }
 
@@ -211,7 +215,11 @@ public class FDCalculatorServiceImpl implements FDCalculatorService {
             res.getCalc().getCalcId(),
             res.getResultId(),
             res.getCalc().getCategory1Code(),
-            res.getCalc().getCategory2Code()
+            res.getCalc().getCategory2Code(),
+            res.getCalc().getProductCode(),
+            res.getCalc().getPrincipalAmount(),
+            res.getCalc().getTenureValue(),
+            res.getCalc().getTenureUnit()
         );
     }
 

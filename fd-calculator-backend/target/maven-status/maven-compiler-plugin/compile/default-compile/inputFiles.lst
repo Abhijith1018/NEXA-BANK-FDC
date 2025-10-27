@@ -38,3 +38,4 @@
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/service/impl/ProductRuleSyncServiceImpl.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/service/impl/ProductRuleValidationServiceImpl.java
 /Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/service/impl/RateCacheServiceImpl.java
+/Users/Jaiwant/repos/NEXA-BANK-FDC/fd-calculator-backend/src/main/java/com/btlab/fdcalculator/util/CurrencyUtil.java

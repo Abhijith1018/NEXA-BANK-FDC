@@ -87,5 +87,34 @@ public record FDCalculationResponse(
         allowableValues = {"SENIOR", "JR", "GOLD", "SILVER", "PLAT", "EMP", "DY", "MIN", "MAX", "MAXINT"},
         nullable = true
     )
-    String category2_id
+    String category2_id,
+    
+    @Schema(
+        description = "Product code used for this FD calculation",
+        example = "FD001",
+        required = true
+    )
+    String product_code,
+    
+    @Schema(
+        description = "Principal amount deposited. Formatted with currency-specific decimals",
+        example = "100000.00",
+        required = true
+    )
+    BigDecimal principal_amount,
+    
+    @Schema(
+        description = "Tenure value (numeric part of the tenure period)",
+        example = "5",
+        required = true
+    )
+    Integer tenure_value,
+    
+    @Schema(
+        description = "Tenure unit (time period unit)",
+        example = "YEARS",
+        allowableValues = {"DAYS", "MONTHS", "YEARS"},
+        required = true
+    )
+    String tenure_unit
 ) {}
